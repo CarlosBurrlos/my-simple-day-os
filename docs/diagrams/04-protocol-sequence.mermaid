@@ -1,0 +1,16 @@
+flowchart TD
+    S1["1 · Emit<br/>device or HID produces an event"]
+    S2["2 · Deliver / interrupt<br/>webhook · push (poll fallback) · [C1]"]
+    S3["3 · Mode switch<br/>ring 3 → ring 0"]
+    S4["4 · Capture — mechanism (deterministic)<br/>dedupe [L8] · record [L1,L2] · audit stub [L7]"]
+    S5["5 · Adjudicate — mediator (policy)<br/>triage · prioritize · map to ticket · [K1–K3]"]
+    S6{"6 · Context switch?<br/>[K1] threshold · [K2] mask"}
+    H["Prompt human"]
+    S7a["7 · Act — internal<br/>commit to fast tier now"]
+    S7b["7 · Act — external / irreversible<br/>capability + confirm [L5] · queue [C2,C4]"]
+    S8["8 · Flush<br/>write-back to slow tiers · [K4,K5]"]
+    S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    S6 -- "preempt" --> H
+    S6 -- "enqueue" --> S7a
+    H --> S7a
+    S7a --> S7b --> S8

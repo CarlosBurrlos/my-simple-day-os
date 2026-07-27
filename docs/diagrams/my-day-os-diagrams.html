@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>my-day-os — Architecture Diagrams</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.1/mermaid.min.js"></script>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem;
+    line-height: 1.5; color: #1a1a1a; background: #fafafa;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e6e6e6; background: #17181a; }
+    .card { background: #1f2124 !important; border-color: #2c2f33 !important; }
+    .sub { color: #9aa0a6 !important; }
+    .group { border-top-color: #2c2f33 !important; }
+  }
+  h1 { font-size: 1.6rem; margin-bottom: .25rem; }
+  .lede { color: #666; margin-top: 0; font-size: .95rem; }
+  .group { margin-top: 2.4rem; padding-top: 1.2rem; border-top: 2px solid #e5e5e5; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: #999; }
+  h2 { font-size: 1.15rem; margin: 1.6rem 0 .3rem; }
+  .sub { color: #666; font-size: .85rem; margin: 0 0 .8rem; }
+  .card {
+    background: #fff; border: 1px solid #e5e5e5; border-radius: 12px;
+    padding: 1.2rem; overflow-x: auto;
+  }
+  .mermaid { display: flex; justify-content: center; }
+  footer { margin-top: 2.5rem; font-size: .8rem; color: #888; }
+</style>
+</head>
+<body>
+  <h1>my-day-os — Architecture Diagrams</h1>
+  <p class="lede">The OS-metaphor layers, the decisions, and their reasons. Companion to ADR-0001, ADR-0002, and POLICY.md.</p>
+
+  <div class="group">Architecture &amp; model</div>
+
+  <h2>1 · Layered / ring architecture</h2>
+  <p class="sub">Devices and the HID feed events into the ring-0 core; views read from the authoritative store. Only the core writes truth.</p>
+  <div class="card"><pre class="mermaid">
+flowchart TB
+    subgraph devices["I/O Devices (external)"]
+        email["Email"]
+        cal["Calendar"]
+    end
+    subgraph hid["HID — primary input"]
+        notion_in["Notion edits = input events"]
+    end
+    subgraph ring0["Ring 0 — Privileged Core (kernel)"]
+        mediator["Mediator Agent<br/>(non-deterministic policy)"]
+        sqlite[("SQLite<br/>System of Record<br/>fast cache tier")]
+    end
+    subgraph views["Ring 3 — Views (read + act)"]
+        web["Web control surface"]
+        obs["Obsidian (Bases)"]
+        notion_out["Notion mirror (glance)"]
+    end
+    email -- "interrupt (event)" --> mediator
+    cal -- "interrupt (event)" --> mediator
+    notion_in -- "input event (message)" --> mediator
+    mediator -- "deterministic record" --> sqlite
+    mediator -- "context-switch? prompt" --> web
+    sqlite -- "live read" --> web
+    sqlite -- "one-way sync" --> obs
+    sqlite -- "one-way sync" --> notion_out
+  </pre></div>
+
+  <h2>2 · Event lifecycle — interrupt to context switch</h2>
+  <p class="sub">An event is captured deterministically, then the mediator decides (non-deterministically) whether it earns a context switch. Not every interrupt preempts.</p>
+  <div class="card"><pre class="mermaid">
+flowchart LR
+    A["Something happens<br/>(event)"] --> B["Interrupt<br/>webhook/push<br/>(poll = fallback)"]
+    B --> C["Mode switch<br/>ring 3 to ring 0"]
+    C --> D["Mechanism (deterministic)<br/>capture + dedupe + record"]
+    D --> E["Policy (mediator)<br/>triage / prioritize / map to ticket"]
+    E --> F{"Context switch?<br/>priority / masking"}
+    F -- "yes" --> G["Preempt: prompt human<br/>scoped authority + confirm"]
+    F -- "no" --> H["Enqueue ticket<br/>no interruption"]
+  </pre></div>
+
+  <h2>3 · Latency hierarchy</h2>
+  <p class="sub">The same memory hierarchy a real OS manages, scaled ~10⁹ into human-perceptible time. Delay is the organizing principle, not a bug.</p>
+  <div class="card"><pre class="mermaid">
+flowchart TB
+    r["SQLite local r/w — ms  (RAM tier)"]
+    m["Mediator inference — seconds  (compute)"]
+    n["Notion sync — seconds to min  (I/O)"]
+    p["Email / calendar poll — minutes  (slow peripheral)"]
+    h["Human answers prompt — min to hours  (slowest device)"]
+    r --> m --> n --> p --> h
+  </pre></div>
+
+  <div class="group">Policy &amp; governance (POLICY.md)</div>
+
+  <h2>4 · Event-consumption protocol, with governing tiers</h2>
+  <p class="sub">The §4 lifecycle, each step tagged with the Law [L], Limit [C], or Lever [K] that governs it.</p>
+  <div class="card"><pre class="mermaid">
+flowchart TD
+    S1["1 · Emit<br/>device or HID produces an event"]
+    S2["2 · Deliver / interrupt<br/>webhook · push (poll fallback) · [C1]"]
+    S3["3 · Mode switch<br/>ring 3 to ring 0"]
+    S4["4 · Capture — mechanism (deterministic)<br/>dedupe [L8] · record [L1,L2] · audit stub [L7]"]
+    S5["5 · Adjudicate — mediator (policy)<br/>triage · prioritize · map to ticket · [K1-K3]"]
+    S6{"6 · Context switch?<br/>[K1] threshold · [K2] mask"}
+    H["Prompt human"]
+    S7a["7 · Act — internal<br/>commit to fast tier now"]
+    S7b["7 · Act — external / irreversible<br/>capability + confirm [L5] · queue [C2,C4]"]
+    S8["8 · Flush<br/>write-back to slow tiers · [K4,K5]"]
+    S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    S6 -- "preempt" --> H
+    S6 -- "enqueue" --> S7a
+    H --> S7a
+    S7a --> S7b --> S8
+  </pre></div>
+
+  <h2>5 · Capability &amp; sandbox model (the firewall)</h2>
+  <p class="sub">Solid arrows = allowed; dotted = denied by a Law. The sandbox around each principal is its capability grant.</p>
+  <div class="card"><pre class="mermaid">
+flowchart LR
+    subgraph ring3["Ring 3 — sandboxed"]
+        views["Views: Web · Obsidian · Notion<br/>read + submit intent"]
+        proc["Ticket / 'process'<br/>runs at granted capability only [L6]"]
+    end
+    subgraph ring0["Ring 0 — privileged core"]
+        mediator["Mediator<br/>read/write SoR · adjudicate"]
+        sor[("System of Record")]
+    end
+    extcap["External-action capability<br/>single, confirmed grant [L5]"]
+    world["Real world<br/>send email · edit calendar"]
+    views -- "intent (allowed)" --> mediator
+    views -. "write SoR — DENIED [L3]" .-> sor
+    mediator -- "sole writer [L1]" --> sor
+    proc -- "request within grant" --> mediator
+    proc -. "act beyond grant — DENIED [L6]" .-> extcap
+    mediator -- "delegate: bounded, revocable" --> extcap
+    extcap -- "act once, confirmed" --> world
+  </pre></div>
+
+  <h2>6 · Policy tiers &amp; change discipline</h2>
+  <p class="sub">Laws are immutable (ADR only); Limits bound the Levers; Levers tune freely.</p>
+  <div class="card"><pre class="mermaid">
+flowchart TB
+    subgraph laws["LAWS — inviolable"]
+        l["L1-L8 · firewalls & sandboxes<br/>change only via a superseding ADR"]
+    end
+    subgraph limits["LIMITS — hard constants"]
+        c["C1-C4 · bound the levers<br/>change deliberately, recorded"]
+    end
+    subgraph levers["LEVERS — tunable"]
+        k["K1-K5 · knobs<br/>tune freely at runtime / config"]
+    end
+    laws --> limits --> levers
+    limits -. "cap how far a lever may turn" .-> levers
+  </pre></div>
+
+  <footer>Generated for the my-day-os project · Proposed model, pending sign-off.</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default',
+    flowchart: { curve: 'basis', useMaxWidth: true }
+  });
+</script>
+</body>
+</html>

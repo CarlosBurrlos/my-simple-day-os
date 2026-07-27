@@ -1,0 +1,7 @@
+flowchart TB
+    r["SQLite local r/w — ms  (RAM tier)"]
+    m["Mediator inference — seconds  (compute)"]
+    n["Notion sync — seconds to min  (I/O)"]
+    p["Email/calendar poll — minutes  (slow peripheral)"]
+    h["Human answers prompt — min to hours  (slowest device)"]
+    r --> m --> n --> p --> h

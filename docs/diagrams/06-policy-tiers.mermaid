@@ -1,0 +1,12 @@
+flowchart TB
+    subgraph laws["LAWS — inviolable"]
+        l["L1–L8 · firewalls & sandboxes<br/>change only via a superseding ADR"]
+    end
+    subgraph limits["LIMITS — hard constants"]
+        c["C1–C4 · bound the levers<br/>change deliberately, recorded"]
+    end
+    subgraph levers["LEVERS — tunable"]
+        k["K1–K5 · knobs<br/>tune freely at runtime / config"]
+    end
+    laws --> limits --> levers
+    limits -. "cap how far a lever may turn" .-> levers

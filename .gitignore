@@ -1,0 +1,24 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment / secrets
+.env
+.env.*
+
+# Local data (the SQLite system-of-record lives locally, not in git)
+*.sqlite
+*.sqlite3
+*.db
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

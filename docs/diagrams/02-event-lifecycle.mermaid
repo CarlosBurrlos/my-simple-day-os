@@ -1,0 +1,8 @@
+flowchart LR
+    A["Something happens<br/>(event)"] --> B["Interrupt<br/>webhook/push<br/>(poll = fallback)"]
+    B --> C["Mode switch<br/>ring 3 to ring 0"]
+    C --> D["Mechanism (deterministic)<br/>capture + dedupe + record"]
+    D --> E["Policy (mediator)<br/>triage · prioritize · map to ticket"]
+    E --> F{"Context switch?<br/>priority / masking"}
+    F -- "yes" --> G["Preempt: prompt human<br/>scoped authority + confirm"]
+    F -- "no" --> H["Enqueue ticket<br/>no interruption"]

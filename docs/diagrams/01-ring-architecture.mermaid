@@ -1,0 +1,25 @@
+flowchart TB
+    subgraph devices["I/O Devices (external)"]
+        email["Email"]
+        cal["Calendar"]
+    end
+    subgraph hid["HID — primary input"]
+        notion_in["Notion edits = input events"]
+    end
+    subgraph ring0["Ring 0 — Privileged Core (kernel)"]
+        mediator["Mediator Agent<br/>(non-deterministic policy)"]
+        sqlite[("SQLite<br/>System of Record<br/>fast cache tier")]
+    end
+    subgraph views["Ring 3 — Views (read + act)"]
+        web["Web control surface"]
+        obs["Obsidian (Bases)"]
+        notion_out["Notion mirror (glance)"]
+    end
+    email -- "interrupt (event)" --> mediator
+    cal -- "interrupt (event)" --> mediator
+    notion_in -- "input event (message)" --> mediator
+    mediator -- "deterministic record" --> sqlite
+    mediator -- "context-switch? prompt" --> web
+    sqlite -- "live read" --> web
+    sqlite -- "one-way sync" --> obs
+    sqlite -- "one-way sync" --> notion_out

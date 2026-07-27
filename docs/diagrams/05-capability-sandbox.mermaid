@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph ring3["Ring 3 — sandboxed"]
+        views["Views: Web · Obsidian · Notion<br/>read + submit intent"]
+        proc["Ticket / 'process'<br/>runs at granted capability only [L6]"]
+    end
+    subgraph ring0["Ring 0 — privileged core"]
+        mediator["Mediator<br/>read/write SoR · adjudicate"]
+        sor[("System of Record")]
+    end
+    extcap["External-action capability<br/>single, confirmed grant [L5]"]
+    world["Real world<br/>send email · edit calendar"]
+    views -- "intent (allowed)" --> mediator
+    views -. "write SoR — DENIED [L3]" .-> sor
+    mediator -- "sole writer [L1]" --> sor
+    proc -- "request within grant" --> mediator
+    proc -. "act beyond grant — DENIED [L6]" .-> extcap
+    mediator -- "delegate: bounded, revocable" --> extcap
+    extcap -- "act once, confirmed" --> world
