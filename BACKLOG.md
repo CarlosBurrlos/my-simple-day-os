@@ -68,6 +68,26 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
 - **Docker build validation** and **Dev Container** configuration for
   reproducible environments.
 
+## Scheduling & interop (post-ADR-0003 design notes)
+
+- **Worker affinity & pooling** — route new tickets to an already-warm worker
+  with similar in-flight context instead of cold-starting per ticket (thread
+  pool, not fork-per-request). The L9 journal is the affinity index (ring-0
+  queries its own state; no agent-to-agent gossip — scheduling stays in the
+  kernel); L11 keeps it safe (lease binds to the *ticket*, so reuse the
+  process/context, re-issue authority per ticket). Lands as an affinity term
+  in the routing rule (ADR-0003 action item 5).
+- **Dispatch batching** — group similar tickets per worker invocation
+  (candidate Lever) when agent-invocation overhead proves dominant.
+- **A2A as a device driver, not kernel IPC** — foreign/third-party agents
+  speak A2A at the ring-3 edge as one more device in the ADR-0002 taxonomy:
+  inbound tasks enter via the capture path, outbound calls are leased,
+  confirmed external actions. Internal worker↔ring-0 messaging needs no
+  protocol ceremony.
+- **Compensation prefers deterministic executors** — failure handling SHOULD
+  route to automation workers, never an improvising agent (execution-SPEC
+  rule when the compensation schema is formalized).
+
 ## Runtime scaffolding
 
 - **FastAPI service shell** — `FastAPIKwArgs`-style ready-made init from
