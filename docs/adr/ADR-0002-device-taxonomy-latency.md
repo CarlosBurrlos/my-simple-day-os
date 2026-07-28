@@ -1,6 +1,6 @@
 # ADR-0002: Device Taxonomy & Latency Hierarchy
 
-**Status:** Proposed
+**Status:** Accepted (2026-07-28 — backfill review per ADR-0006 action item 6)
 **Date:** 2026-07-26
 **Deciders:** Carlos
 **Related:** Builds on ADR-0001 (Backbone)
@@ -28,7 +28,7 @@ Adopt an explicit **OS device taxonomy** for every component, and treat **system
 - Design around the latency hierarchy using standard kernel techniques (local cache tier, write-back, batching, non-blocking I/O). Treat eventual consistency as **an unflushed write-back cache**, not an error.
 - Resolve the resulting cache-coherency problem with **message-passing, not shared memory**: human edits arrive as events, they do not mutate shared truth in place.
 
-**Status is Proposed** — this formalizes the model for sign-off before any component is built.
+Reviewed and **Accepted** 2026-07-28 — see *Review Notes* below. The model was already load-bearing: ADR-0003 was built on it and accepted first.
 
 ---
 
@@ -42,6 +42,8 @@ Adopt an explicit **OS device taxonomy** for every component, and treat **system
 | Web control surface | Terminal (I/O) | Act + answer mediator prompts in real time | No — submits intents |
 | Obsidian (Bases) | Monitor (read) + future notes disk | Owned, local read mirror; notes/knowledge home | No — read mirror |
 | Email, Calendar | Disk / network I/O devices | Emit external events | No — external sources |
+
+**Confirmation class (additive delta from accepted ADR-0003).** Each device additionally declares a *confirmation class* ∈ {`idempotent-keyed`, `confirmable`, `opaque`} — it selects the rung of the L10 confirmation ladder used when acting on that device. Per-device classifications are driver/SPEC detail, not fixed here.
 
 ### Why Notion = HID (and why it matters)
 
@@ -154,14 +156,23 @@ flowchart TB
 
 **Harder:** the mediator's policy layer must be built with audit logging, scoped capabilities, and dedupe from day one — these are not optional add-ons. The write-back model means the fast tier and Notion/external state are *intentionally* divergent for windows of time, which must be communicated in any view ("pending flush").
 
-**Revisit:** the exact masking/priority policy that decides context switches (its own future concern); the email/calendar provider (Google vs Outlook) as the concrete I/O driver.
+**Revisit:** the exact masking/priority policy that decides context switches (ADR-0005); the email/calendar **provider interface** — per the ADR-0001 backfill review, no provider is picked: a generic interface is defined and implemented per provider (Google, Outlook, …) as interchangeable drivers, no lock-in.
 
 ---
 
+## Review Notes (backfill, per ADR-0006 §4)
+
+**Reviewed:** 2026-07-28 · **Verdict:** Accepted with amendments (applied) · **Reviewer:** Carlos stamped; review conducted by Claude per the ADR-0006 §4 checklist.
+
+- **No formal policy-delta table** (pre-dates the ADR-0006 required shape): this ADR's guardrails are the seeds POLICY.md credits for L1–L8, plus C1 and the K4/K5 concepts. POLICY.md is the authoritative formalization; the W3 frontmatter will record the mapping. No conflicts with L1–L11 found — ADR-0003 was built on this model and accepted first.
+- **Amendments applied:** confirmation-class field added to the taxonomy (fulfilling ADR-0003 action item 6); Revisit line aligned with the generic provider-interface decision from the ADR-0001 backfill review; action items 2–4 re-scoped below.
+- **Alternatives:** no formal Options section, but the cache-coherency section genuinely weighs shared-memory-plus-coherency against message-passing — substantively satisfied.
+- HID interaction model clarified during review: Notion is a *touchscreen* (display + input on one surface); user edits are keystrokes adjudicated into tickets, never writes. Echo suppression and the flush-policy triad (dirty tracking / force flush / anti-entropy scrub) recorded against the re-scoped items below.
+
 ## Action Items (research/planning — no code yet)
 
-1. [ ] Sign off on the device taxonomy and the message-passing (not shared-memory) stance.
-2. [ ] Define the **input-event schema** (what a Notion edit / device event carries as a message).
-3. [ ] Define the **audit-log record** (raw event + mediator decision + rationale).
-4. [ ] Specify the **write-back flush policy** (when the fast tier flushes to Notion/external, and how "pending" is shown).
+1. [x] Sign off on the device taxonomy and the message-passing (not shared-memory) stance. *(Signed off 2026-07-28, backfill review.)*
+2. [ ] Define the **input-event schema**. *(Re-scoped 2026-07-28 to SPEC-level work; must include HID echo suppression — capture diffs against the expected post-flush state so the OS never re-ingests its own writes as user input.)*
+3. [ ] Define the **audit-log record**. *(Re-scoped 2026-07-28 to SPEC-level work, alongside the journal-record schema of ADR-0003 action item 4.)*
+4. [ ] Specify the **write-back flush policy**. *(Re-scoped 2026-07-28 to K4/K5 defaults — likely ADR-0004 territory — incorporating the flush triad: dirty tracking, explicit force flush, anti-entropy scrub; see BACKLOG.)*
 5. [ ] Draft the masking/priority policy for context switches (now ADR-0005 — queued as W10; ADR-0003 became execution & orchestration).
