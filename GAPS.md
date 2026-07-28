@@ -7,18 +7,6 @@
      their work item pops and completes. Not every queue row needs an
      entry — only the ones with real depth. -->
 
-## W1 — Review ADR-0003
-
-The review has no defined finish line yet (no ADR lifecycle vocabulary — see
-W2). For this review, the working definition of done:
-
-- Verdict recorded in ADR-0003 itself (status change + review notes), so the
-  outcome never has to be re-derived from memory.
-- Each proposed policy ID (L9–L11, C5–C7, K6–K8) checked for: a kind
-  (Law/Limit/Lever), a stated violation condition, and an origin section.
-- No conflicts with accepted canon (L1–L8); anything deferred is explicitly
-  named (ADR-0004 timer/clock, ADR-0005 masking/priority ratifying K1–K3).
-
 ## W2 — Meta-ADR (document architecture)
 
 Collects the doctrine agreed in conversation but not yet written down:
