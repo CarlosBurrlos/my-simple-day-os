@@ -176,6 +176,17 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
   data (SQLite on disk) isn't scarce, while context windows and human
   attention are fixed-size and expensive — the same resource class at two
   tiers, and the very thing this OS schedules.
+- **Flush policy triad: dirty tracking · force flush · anti-entropy scrub**
+  (2026-07-28) — repaint minimally: per-ticket dirty bits so the write-back
+  flush touches only changed projections (damage regions; empty dirty set =
+  zero Notion requests against C1); an explicit force-flush verb (fsync
+  analog) in job control; and drift repair for SoR↔mirror decay — rendered
+  rows carry a version token/content hash, a scrub pass (housekeeping-daemon
+  job, idle or event-triggered via stateful health events) compares expected
+  vs observed and marks mismatches dirty, so repair IS repaint. The
+  expected-state ledger doubles as the HID echo-suppression baseline — one
+  ledger, two consumers. Home: K4/K5 flush policy (ADR-0004 territory) +
+  execution SPEC.
 - **Agent retirement & revival (suspend-to-journal)** — an agent's durable
   state IS the journal, so retire = surrender lease (L11) + exit, and revive
   = spin a fresh agent rehydrated from the journal digest (demand paging).
