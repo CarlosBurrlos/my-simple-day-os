@@ -38,8 +38,8 @@ Rules:
 | ADR-0001 | Backbone (System of Record) | Accepted | L1, L3 |
 | ADR-0002 | Device Taxonomy & Latency Hierarchy | Accepted | L2, L4–L8, C1 |
 | ADR-0003 | Execution & Orchestration Model | Accepted | L9–L11, C5–C7, K6–K8 |
-| ADR-0004 | Timer / Clock device | *reserved* | — |
-| ADR-0005 | Masking & priority policy | *reserved* | K1–K3 expected |
+| ADR-0004 | Timer / Clock Device | Proposed | C8 new; claims C2, C4, K4, K5 |
+| ADR-0005 | Masking & Priority Policy | Proposed | K9 new; claims K1–K3, C3 |
 | ADR-0006 | Document Architecture & Governance (meta) | Accepted | — |
 
 ## Origin-pending policy IDs
@@ -48,11 +48,12 @@ POLICY.md stubs whose originating ADR is not yet assigned — a pre-seeded
 audit finding, to be claimed by ADR-0004/0005 or a successor:
 
 - **The flush family** — flush cadence (K4), batch size (K5), the in-flight
-  write ceiling (C2), and the unconfirmed-action age limit (C4): all arise
-  from the ADR-0002 write-back model but were never formally proposed by it.
-  Expected owner: ADR-0004 (clock/flush territory), claiming the family in
-  one act.
-- **The WIP cap on active tickets (C3)** — scheduling territory; owner TBD
-  (ADR-0004 or ADR-0005).
+  write ceiling (C2), and the unconfirmed-action age limit (C4): claim
+  **proposed by ADR-0004** (2026-07-29); origin transfers on its acceptance.
+- **The active-ticket WIP cap (C3)** — claim **proposed by ADR-0005**
+  (2026-07-29); origin transfers on its acceptance.
 - **Context-switch threshold (K1), masking windows (K2), triage
-  aggressiveness (K3)** — expected from ADR-0005.
+  aggressiveness (K3)** — claim **proposed by ADR-0005** (2026-07-29);
+  origin transfers on its acceptance.
+
+Once both proposals are accepted and ratified, this ledger empties.
