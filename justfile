@@ -28,6 +28,20 @@ fmt-check:
 # Run all checks (lint + format check) — CI-safe, no writes
 check: lint fmt-check
 
+# Session status report: where we are & what's ready to go
+status:
+    @echo "── my-day-os · status ─────────────────────────────"
+    @git log --oneline -5
+    @echo ""
+    @echo "── Work queue (TODO.md — head is next up) ─────────"
+    @awk '/^```csv/{f=1;next} /^```/{f=0} f' TODO.md | head -5
+    @echo ""
+    @echo "── Working tree ───────────────────────────────────"
+    @git status --short || true
+    @echo ""
+    @echo "── ID high-water marks ────────────────────────────"
+    @uv run python scripts/next_id.py --list
+
 # Show the next available ID in every sequence (no allocation)
 ids:
     uv run python scripts/next_id.py --list

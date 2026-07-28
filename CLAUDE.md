@@ -24,6 +24,14 @@ is no application code yet; the work product is the design canon in `docs/`.
 | `AGENTS.md` | Sandbox git flow (remote setup, PAT) + agent guardrails |
 | `COMMIT_CONVENTION.md` | Self-contained Conventional Commits rules |
 
+## Session start
+
+At the start of a session (or after a long gap), run **`just status`** before
+picking up work: it prints the last commits, the work-queue head (next up),
+the working-tree state, and ID high-water marks. Then read the head row's
+GAPS entry if it has one. This is the "here we are & here's what's ready"
+report — prefer it over re-deriving state by browsing.
+
 ## Tooling
 
 Python 3.12.0 (pinned), managed by **uv**; linted/formatted by **Ruff**. Use
