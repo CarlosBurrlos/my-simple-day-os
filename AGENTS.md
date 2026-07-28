@@ -57,11 +57,7 @@ python scripts/configure_remote.py --clear
 
 `scripts/configure_remote.py` stores the token **only** in the local `.git/config` (never tracked, never committed) and keeps it out of `git remote -v`. **Revoke the PAT when the sandbox is done.**
 
-Commit-message trailer convention (attribution for AI-assisted commits):
-
-```
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
+Commit messages follow Conventional Commits — the full, self-contained rules live in `COMMIT_CONVENTION.md` (read it before committing; most commits here are `docs` or `chore`), e.g. `docs(adr): propose ADR-0004 timer device`. Do **not** add per-commit AI attribution trailers — AI co-authoring is acknowledged once, in `README.md`.
 
 ## Guardrails
 

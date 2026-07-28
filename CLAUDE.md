@@ -99,6 +99,20 @@ uv run mkdocs build
 uv run mkdocs gh-deploy
 ```
 
+### Justfile (task runner for this repo)
+
+A `justfile` at the repo root wraps the common uv/ruff commands. Scope is Python project code only. Prefer these recipes over typing raw commands:
+
+```bash
+just            # list recipes (default)
+just sync       # uv sync — install/sync dependencies
+just lint       # uv run ruff check .
+just lint-fix   # uv run ruff check . --fix
+just fmt        # uv run ruff format .
+just fmt-check  # uv run ruff format . --check (no writes)
+just check      # lint + fmt-check — CI-safe, no writes
+```
+
 ## Architecture
 
 ### Core Modules
@@ -262,6 +276,10 @@ GitHub Actions workflows in `.github/workflows/`:
 - **gh-deploy.yml**: Deploy documentation to GitHub Pages
 
 All workflows use the same nox commands as local development.
+
+## Commit Messages — Conventional Commits
+
+All commits follow the convention in [COMMIT_CONVENTION.md](COMMIT_CONVENTION.md) — a self-contained, lift-and-shift copy of Conventional Commits v1.0.0 plus this repo's scopes and house style. Read it before committing. Quick shape: `<type>[scope][!]: <description>`; in this planning-phase repo most commits are `docs` or `chore`. Do **not** add `Co-Authored-By` or other AI-attribution trailers to commits — AI co-authoring is acknowledged once, in `README.md`.
 
 ## Pull Request Process
 
