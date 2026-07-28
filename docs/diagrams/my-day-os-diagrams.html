@@ -155,6 +155,54 @@ flowchart TB
     limits -. "cap how far a lever may turn" .-> levers
   </pre></div>
 
+  <div class="group">Execution &amp; orchestration (ADR-0003)</div>
+
+  <h2>7 · Ticket execution state machine</h2>
+  <p class="sub">A ticket's lifecycle once it exists — including blocked, waiting-on-human, failed/retrying, and compensating. Tags reference POLICY Laws/Limits.</p>
+  <div class="card"><pre class="mermaid">
+stateDiagram-v2
+    [*] --> Issued
+    Issued --> Ready: deps met + admitted
+    Ready --> Deferred: scheduled (Clock, ADR-0004)
+    Deferred --> Ready: timer fires
+    Ready --> Dispatched: dispatcher assigns a worker
+    Dispatched --> Running: worker starts (capability lease)
+    Running --> Blocked: awaiting dependency/resource
+    Blocked --> Ready: unblocked
+    Running --> WaitingHuman: needs input / confirm [L5]
+    WaitingHuman --> Running: input received
+    Running --> Done: success
+    Running --> Failed: error / timeout
+    Failed --> Retrying: attempts < max [C7]
+    Retrying --> Ready
+    Failed --> Compensating: no retry, partial effects
+    Compensating --> Dropped
+    Running --> Cancelled: job-control (human)
+    Done --> [*]
+    Dropped --> [*]
+    Cancelled --> [*]
+  </pre></div>
+
+  <h2>8 · Dispatch flow — run queue to worker</h2>
+  <p class="sub">One dispatcher pulls READY tickets and routes each to its executor kind (agent / automation / human), under a capability lease, journaling write-ahead before any act.</p>
+  <div class="card"><pre class="mermaid">
+flowchart TB
+    subgraph core["Ring 0 core"]
+        sor[("SQLite: tickets + WAL journal")]
+        disp["Dispatcher<br/>pull READY by priority [K1]<br/>respect concurrency [C5] · WIP [C3] · in-flight [C2]"]
+    end
+    sor -- "READY tickets" --> disp
+    disp -- "capability lease [L6 / L11]" --> route{"executor kind?"}
+    route -- "agent" --> wa["Agent worker<br/>budget [C6]"]
+    route -- "automation" --> wt["Automation worker<br/>deterministic tool"]
+    route -- "human" --> wh["Human queue<br/>(Web / Notion)"]
+    wa --> jrnl["write-ahead intent [L9]<br/>then act — idempotent [L10]"]
+    wt --> jrnl
+    wh --> jrnl
+    jrnl -- "result / new state" --> sor
+    jrnl -. "irreversible? confirm [L5]" .-> wh
+  </pre></div>
+
   <footer>Generated for the my-day-os project · Proposed model, pending sign-off.</footer>
 
 <script>

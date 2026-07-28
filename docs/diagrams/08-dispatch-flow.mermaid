@@ -1,0 +1,15 @@
+flowchart TB
+    subgraph core["Ring 0 core"]
+        sor[("SQLite: tickets + WAL journal")]
+        disp["Dispatcher<br/>pull READY by priority [K1]<br/>respect concurrency [C5] · WIP [C3] · in-flight [C2]"]
+    end
+    sor -- "READY tickets" --> disp
+    disp -- "capability lease [L6 / L11]" --> route{"executor kind?"}
+    route -- "agent" --> wa["Agent worker<br/>budget [C6]"]
+    route -- "automation" --> wt["Automation worker<br/>deterministic tool"]
+    route -- "human" --> wh["Human queue<br/>(Web / Notion)"]
+    wa --> jrnl["write-ahead intent [L9]<br/>then act — idempotent [L10]"]
+    wt --> jrnl
+    wh --> jrnl
+    jrnl -- "result / new state" --> sor
+    jrnl -. "irreversible? confirm [L5]" .-> wh

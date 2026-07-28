@@ -1,0 +1,21 @@
+stateDiagram-v2
+    [*] --> Issued
+    Issued --> Ready: deps met + admitted
+    Ready --> Deferred: scheduled (Clock, ADR-0004)
+    Deferred --> Ready: timer fires
+    Ready --> Dispatched: dispatcher assigns a worker
+    Dispatched --> Running: worker starts (capability lease)
+    Running --> Blocked: awaiting dependency/resource
+    Blocked --> Ready: unblocked
+    Running --> WaitingHuman: needs input / confirm [L5]
+    WaitingHuman --> Running: input received
+    Running --> Done: success
+    Running --> Failed: error / timeout
+    Failed --> Retrying: attempts < max [C7]
+    Retrying --> Ready
+    Failed --> Compensating: no retry, partial effects
+    Compensating --> Dropped
+    Running --> Cancelled: job-control (human)
+    Done --> [*]
+    Dropped --> [*]
+    Cancelled --> [*]
