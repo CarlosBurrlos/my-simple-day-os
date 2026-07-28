@@ -242,3 +242,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# next_id.py lock file (transient)
+docs/sequences.json.lock
