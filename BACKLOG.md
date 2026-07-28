@@ -126,7 +126,11 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
   context window = RAM: working-set selection at dispatch (need-to-know as
   informational L6), journal-backed digests as swap-out, demand paging from
   the SoR. Contradicts POLICY's no-VM scope rule for *data*; must re-enter
-  via an ADR paragraph justifying the distinction.
+  via an ADR paragraph justifying the distinction. **Direction endorsed by
+  Carlos 2026-07-28** — rationale to record: VM concepts manage *scarcity*;
+  data (SQLite on disk) isn't scarce, while context windows and human
+  attention are fixed-size and expensive — the same resource class at two
+  tiers, and the very thing this OS schedules.
 - **Agent retirement & revival (suspend-to-journal)** — an agent's durable
   state IS the journal, so retire = surrender lease (L11) + exit, and revive
   = spin a fresh agent rehydrated from the journal digest (demand paging).
