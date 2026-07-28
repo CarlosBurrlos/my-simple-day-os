@@ -7,14 +7,6 @@
      their work item pops and completes. Not every queue row needs an
      entry — only the ones with real depth. -->
 
-## W5 — TEMPLATE-ADR.md
-
-Implements ADR-0006 §4's required shape: Context, Motivation, Options/
-Alternatives considered, Decision, Proposed policy deltas (kind +
-allocator-issued ID + violation condition), Consequences, Action items,
-and a Review Notes slot filled on acceptance. Mirrors the SPEC registry
-table for proposed IDs; pre-normative language.
-
 ## W10 — Draft ADR-0005 Masking & priority
 
 Beyond ratifying K1–K3 and the notification feed, scope the
