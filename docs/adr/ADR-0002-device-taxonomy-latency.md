@@ -4,7 +4,7 @@ title: Device Taxonomy & Latency Hierarchy
 status: Accepted
 date: 2026-07-26
 accepted: 2026-07-28
-proposes: [L2, L4, L5, L6, L7, L8, C1, K4, K5]
+proposes: [L2, L4, L5, L6, L7, L8, C1]
 depends-on: [ADR-0001]
 supersedes: []
 defers-to: []
