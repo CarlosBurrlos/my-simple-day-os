@@ -1,0 +1,56 @@
+# Decision tree for choosing a commit message, derived from COMMIT_CONVENTION.md.
+# Walk the tree top-down: at each node answer the question and follow the branch.
+# Portable companion to COMMIT_CONVENTION.md — only `project` changes per repo.
+
+format: "<type>[optional scope][!]: <description>"
+
+decision_tree:
+  question: "Does the commit change behavior of the product/code?"
+  "yes":
+    question: "Does it fix a bug?"
+    "yes":
+      type: fix
+      semver: PATCH
+    "no":
+      question: "Does it add a new capability or behavior?"
+      "yes":
+        type: feat
+        semver: MINOR
+      "no":
+        question: "Is it purely a performance improvement?"
+        "yes":
+          type: perf
+        "no":
+          type: refactor
+          note: "Code change that neither fixes a bug nor adds a feature."
+  "no":
+    question: "What does it touch?"
+    branches:
+      documentation-only: { type: docs }
+      tests-only: { type: test }
+      build-system-or-dependencies: { type: build }
+      ci-config-or-scripts: { type: ci }
+      formatting-whitespace-only: { type: style }
+      reverting-a-previous-commit:
+        type: revert
+        note: "Reference the reverted commit in the body/footer."
+      other-maintenance-tooling-config: { type: chore }
+
+then:
+  - step: scope
+    question: "Can you name the section of the codebase touched?"
+    "yes": "Add it in parentheses: <type>(<scope>):"
+    "no": "Omit the scope."
+  - step: breaking
+    question: "Does it break a documented contract or compatibility?"
+    "yes": "Append `!` before the colon and/or add a `BREAKING CHANGE: <description>` footer. semver: MAJOR."
+    "no": "No marker."
+  - step: description
+    rule: "Imperative mood, lowercase, no trailing period, <= 72 chars."
+  - step: body-and-footers
+    rule: "Optional body (what/why) after a blank line; git-trailer footers after another blank line."
+
+project: # my-day-os specifics — edit per repo
+  common_types: [docs, chore]
+  scopes: [adr, policy, diagrams, overview, just, scripts]
+  breaking_rule: "A ratified change to docs/POLICY.md Laws is breaking, e.g. docs(policy)!: ratify ADR-0003 deltas"
