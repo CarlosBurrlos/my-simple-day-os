@@ -118,8 +118,16 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
   via an ADR paragraph justifying the distinction.
 - **Watchdog** — nothing watches ring 0; external heartbeat on the
   dispatcher's journal tick.
-- **Idle task** — empty queue = maintenance window: digest generation,
-  journal compaction, speculation.
+- **Housekeeping daemon (kernel-threads analog: kswapd/writeback/journald)** —
+  a separate process, asleep by default, woken by transition **signals** or
+  by an empty queue (the idle task is this daemon's second wake source).
+  Owns the expensive async work gate strategies must not do inline: batch
+  assembly, queue re-optimization between ticks, memoization warmup, journal
+  compaction, digest generation, speculation. Observes signals freely, but
+  its *actions* re-enter as system-originated tickets/messages through
+  ring 0 — journaled, auditable, budgeted (L1/L7 hold even for the janitor).
+  Implementable as a privileged automation worker with a standing
+  maintenance lease.
 - **Load shedding (OOM-killer analog)** — policy for global budget pressure
   mid-flight: shed lowest-priority reversible work first; never shed
   awaiting-confirmation work.
