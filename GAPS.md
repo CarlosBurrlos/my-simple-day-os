@@ -50,6 +50,24 @@ that ours must too:
 - **Alternatives considered** — what was rejected and why; the only thing that
   makes "why not X?" answerable months later.
 
+## W10 — Draft ADR-0005 Masking & priority
+
+Beyond ratifying K1–K3 and the notification feed, scope the
+**completion ≠ notification** rule (2026-07-28 discussion):
+
+- A completed ticket parks silently (visible in the feed); **preemption fires
+  only when computed urgency crosses K1**, not on completion.
+- Urgency is a deadline-driven aging function (priority grows toward the
+  deadline; "alert at deadline − N min" = a timer ticket bumping priority —
+  depends on the ADR-0004 clock, W9).
+- The finishing agent's last act before retirement: compute/confirm the
+  urgency curve + alert time, journal it, surrender its lease (L11), exit.
+  Revival on review-feedback rehydrates a fresh agent from the journal
+  digest (see BACKLOG: context compression / retire-revive).
+- Open policy question: does work-awaiting-review age on a steeper curve
+  than work-not-yet-done? (Probably yes — 5 min of review deserves a harder
+  late ramp than an hour of unstarted work.)
+
 ## W7 — just audit
 
 Read-only validator over the canon:

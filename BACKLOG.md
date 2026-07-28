@@ -127,6 +127,12 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
   informational L6), journal-backed digests as swap-out, demand paging from
   the SoR. Contradicts POLICY's no-VM scope rule for *data*; must re-enter
   via an ADR paragraph justifying the distinction.
+- **Agent retirement & revival (suspend-to-journal)** — an agent's durable
+  state IS the journal, so retire = surrender lease (L11) + exit, and revive
+  = spin a fresh agent rehydrated from the journal digest (demand paging).
+  No long-lived processes waiting on humans. Enables completion-decoupled
+  alerting (see GAPS#W10): finished work parks silently and preempts only
+  when deadline-aged urgency crosses K1.
 - **Watchdog** — nothing watches ring 0; external heartbeat on the
   dispatcher's journal tick.
 - **Housekeeping daemon (kernel-threads analog: kswapd/writeback/journald)** —

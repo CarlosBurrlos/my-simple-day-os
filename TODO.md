@@ -19,5 +19,5 @@ W6,just ratify,Pull-based ADR -> dictionary step; no watchers; human-triggered,W
 W7,just audit,Read-only ledger reconciliation + DAG/cycle checks + blast-radius scoring,W3,GAPS#W7
 W8,Repo hygiene,just fmt (unformatted files); delete main.py stub,,GAPS#W8
 W9,Draft ADR-0004 Timer/Clock,Time-triggered + recurring promises; Deferred state; tick/quantum home; K4/K5 default ownership,W5,
-W10,Draft ADR-0005 Masking & priority,Ratifies K1-K3 + preemption rules; ALSO scope the notification feed (constant OS-level info stream to user; the non-preemptive channel),W5,
+W10,Draft ADR-0005 Masking & priority,Ratifies K1-K3 + preemption rules; ALSO notification feed + completion-vs-notification decoupling (urgency-aged alerts),W5,GAPS#W10
 ```
