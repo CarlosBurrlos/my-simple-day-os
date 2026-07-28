@@ -217,5 +217,5 @@ Findings, all resolved in this document:
 3. [x] Finalize the execution state machine (confirm states/transitions above). *(Amended + confirmed in the W1 review: Dispatched→Failed ack timeout, universal human cancel.)*
 4. [ ] Specify the **journal record** schema (step, intent, idempotency key, result) — distinct from the audit record.
 5. [ ] Define the **routing rule**: how the mediator assigns `executor_kind` when it issues a ticket.
-6. [ ] Record the **confirmation class** field (`idempotent-keyed` / `confirmable` / `opaque`) as an additive delta to the ADR-0002 device taxonomy.
+6. [x] Record the **confirmation class** field (`idempotent-keyed` / `confirmable` / `opaque`) as an additive delta to the ADR-0002 device taxonomy. *(Recorded 2026-07-28, during the ADR-0002 backfill review.)*
 7. [ ] Then, and only then, scope the *first* single-responsibility component (likely: the ticket + state-machine schema, or the dispatcher skeleton).

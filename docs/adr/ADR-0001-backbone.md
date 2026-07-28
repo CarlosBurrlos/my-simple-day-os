@@ -1,6 +1,6 @@
 # ADR-0001: Backbone (System of Record) for my-day-os
 
-**Status:** Proposed
+**Status:** Accepted (2026-07-28 — backfill review per ADR-0006 action item 6)
 **Date:** 2026-07-26
 **Deciders:** Carlos
 **Supersedes:** —
@@ -155,13 +155,17 @@ Notion is not being rejected — it's being **repositioned** from backbone to in
 
 ---
 
+## Review Notes (backfill, per ADR-0006 §4)
+
+**Reviewed:** 2026-07-28 · **Verdict:** Accepted · **Reviewer:** Carlos (human-conducted). The layered decision (SQLite-as-backbone + Notion-as-view) is confirmed as-is — "perfect," in the reviewer's words. This ADR predates the ADR-0006 required shape; its Options table serves as the alternatives analysis, and its seeded Laws (L1–L8 foundations, formalized via ADR-0002 into POLICY.md) were already treated as stable canon by the accepted ADR-0003, so no conflicts exist by construction. Action-item dispositions below.
+
 ## Action Items (research/planning — no code yet)
 
-1. [ ] **Confirm the layered decision** (SQLite-as-backbone + Notion-as-view) or elect the simpler pure-Notion path — this is the sign-off this ADR asks for.
-2. [ ] **Model the ticket** on paper: what fields does a "promise" carry (issued-at, promised-for, resource type, state, priority, source)? This defines the SQLite schema and the OS "process control block."
+1. [x] **Confirm the layered decision** (SQLite-as-backbone + Notion-as-view) or elect the simpler pure-Notion path — this is the sign-off this ADR asks for. *(Confirmed 2026-07-28, backfill review.)*
+2. [ ] **Model the ticket** on paper. *(Re-scoped 2026-07-28: the ADR is not the place to harden field-level detail — this belongs to the ticket-schema work of ADR-0003 action item 7 / the execution SPEC.)*
 3. [x] **Sketch the ticket state machine** (e.g. `issued → scheduled → in-progress → done / dropped / deferred`) — the OS process lifecycle. *(Fulfilled by ADR-0003's execution state machine, accepted 2026-07-28.)*
-4. [ ] **Decide the first view**: CLI-only to start, or Notion-as-view from the outset.
-5. [ ] **Pick the device provider** (Google vs Outlook) in a follow-up ADR — establishes how email/calendar interrupts arrive.
+4. [ ] **Decide the first view.** *(Direction set 2026-07-28: VSCode extensions suffice as the local-dev view for now; CLI acceptable fallback; a richer purpose-built view is deferred until there is state worth viewing.)*
+5. [ ] **Device provider** — *(Re-scoped 2026-07-28: do **not** pick a provider. The follow-up ADR defines a generic provider interface implemented per provider (Google, Outlook, …) — no lock-in; providers are drivers behind one interface.)*
 6. [ ] Only after 1–5: write the *first* single-responsibility component (most likely: define the SQLite schema + a thin ticket store).
 
 ---

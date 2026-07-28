@@ -176,6 +176,17 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
   data (SQLite on disk) isn't scarce, while context windows and human
   attention are fixed-size and expensive — the same resource class at two
   tiers, and the very thing this OS schedules.
+- **Flush policy triad: dirty tracking · force flush · anti-entropy scrub**
+  (2026-07-28) — repaint minimally: per-ticket dirty bits so the write-back
+  flush touches only changed projections (damage regions; empty dirty set =
+  zero Notion requests against C1); an explicit force-flush verb (fsync
+  analog) in job control; and drift repair for SoR↔mirror decay — rendered
+  rows carry a version token/content hash, a scrub pass (housekeeping-daemon
+  job, idle or event-triggered via stateful health events) compares expected
+  vs observed and marks mismatches dirty, so repair IS repaint. The
+  expected-state ledger doubles as the HID echo-suppression baseline — one
+  ledger, two consumers. Home: K4/K5 flush policy (ADR-0004 territory) +
+  execution SPEC.
 - **Agent retirement & revival (suspend-to-journal)** — an agent's durable
   state IS the journal, so retire = surrender lease (L11) + exit, and revive
   = spin a fresh agent rehydrated from the journal digest (demand paging).
@@ -205,6 +216,25 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
 - **Boot protocol** — startup ordering: integrity scan → reconcile
   attempted-unconfirmed suspects → resume in-flight → admit new work.
   Pairs with ADR-0004.
+
+## SQLite side quest — "many DB files, one protocol" (2026-07-28)
+
+The OS metaphor lands hard here: an OS has a filesystem, and SQLite DBs *are
+files* — so the storage layer can be treated as a mounted-filesystem model:
+
+- **Many DB files, one protocol.** Subsystems may get their own DB files
+  (SoR/tickets, journal+audit, future content stores) unified behind a single
+  client layer — SQLite's `ATTACH DATABASE` is literally `mount`, and its VFS
+  layer is the exact analog of a filesystem driver. One protocol to rule them
+  all; per-file lifecycle (backup, compaction, retention) stays independent.
+- **Innovation room**: custom client wrapper as the ring-0 storage driver
+  (sole writer, L1/L9 enforcement in one choke point), WAL tuning, FTS5,
+  per-DB integrity checks as housekeeping-daemon work.
+- **References found (evaluate later):** [sqlitecloud.io](https://sqlitecloud.io)
+  (hosted SQLite + dashboard) and a Rails-based SQLite portal on GitHub
+  (link TBD). Constraint for any such tool: the SoR is local-first and
+  ring 0 is the sole writer — a cloud/portal product can only ever be a
+  **ring-3 read-only view** (or a backup target), never a second writer.
 
 ## Runtime scaffolding
 
