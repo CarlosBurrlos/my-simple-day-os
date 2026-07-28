@@ -25,8 +25,12 @@ fmt:
 fmt-check:
     uv run ruff format . --check
 
-# Run all checks (lint + format check) — CI-safe, no writes
-check: lint fmt-check
+# Run the test suite (stdlib unittest; pytest graduates later from BACKLOG)
+test:
+    uv run python -m unittest discover -s tests
+
+# Run all checks (lint + format check + tests) — CI-safe, no writes
+check: lint fmt-check test
 
 # Session status report: where we are & what's ready to go
 status:
