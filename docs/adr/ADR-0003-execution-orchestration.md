@@ -212,9 +212,9 @@ Findings, all resolved in this document:
 
 ## Action Items (research/planning — no code yet)
 
-1. [ ] Sign off on the polymorphic Worker (Option D) and the executor-kind field on a ticket.
-2. [ ] Ratify the proposed POLICY deltas (L9–L11, C5–C7, K6–K8) into POLICY.md, or amend.
-3. [ ] Finalize the execution state machine (confirm states/transitions above).
+1. [x] Sign off on the polymorphic Worker (Option D) and the executor-kind field on a ticket. *(Accepted 2026-07-28, W1 review.)*
+2. [x] Ratify the proposed POLICY deltas (L9–L11, C5–C7, K6–K8) into POLICY.md, or amend. *(Ratified 2026-07-28.)*
+3. [x] Finalize the execution state machine (confirm states/transitions above). *(Amended + confirmed in the W1 review: Dispatched→Failed ack timeout, universal human cancel.)*
 4. [ ] Specify the **journal record** schema (step, intent, idempotency key, result) — distinct from the audit record.
 5. [ ] Define the **routing rule**: how the mediator assigns `executor_kind` when it issues a ticket.
 6. [ ] Record the **confirmation class** field (`idempotent-keyed` / `confirmable` / `opaque`) as an additive delta to the ADR-0002 device taxonomy.

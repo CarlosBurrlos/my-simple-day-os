@@ -164,4 +164,4 @@ flowchart TB
 2. [ ] Define the **input-event schema** (what a Notion edit / device event carries as a message).
 3. [ ] Define the **audit-log record** (raw event + mediator decision + rationale).
 4. [ ] Specify the **write-back flush policy** (when the fast tier flushes to Notion/external, and how "pending" is shown).
-5. [ ] Draft the masking/priority policy for context switches (candidate for ADR-0003).
+5. [ ] Draft the masking/priority policy for context switches (now ADR-0005 — queued as W10; ADR-0003 became execution & orchestration).

@@ -159,7 +159,7 @@ Notion is not being rejected — it's being **repositioned** from backbone to in
 
 1. [ ] **Confirm the layered decision** (SQLite-as-backbone + Notion-as-view) or elect the simpler pure-Notion path — this is the sign-off this ADR asks for.
 2. [ ] **Model the ticket** on paper: what fields does a "promise" carry (issued-at, promised-for, resource type, state, priority, source)? This defines the SQLite schema and the OS "process control block."
-3. [ ] **Sketch the ticket state machine** (e.g. `issued → scheduled → in-progress → done / dropped / deferred`) — the OS process lifecycle.
+3. [x] **Sketch the ticket state machine** (e.g. `issued → scheduled → in-progress → done / dropped / deferred`) — the OS process lifecycle. *(Fulfilled by ADR-0003's execution state machine, accepted 2026-07-28.)*
 4. [ ] **Decide the first view**: CLI-only to start, or Notion-as-view from the outset.
 5. [ ] **Pick the device provider** (Google vs Outlook) in a follow-up ADR — establishes how email/calendar interrupts arrive.
 6. [ ] Only after 1–5: write the *first* single-responsibility component (most likely: define the SQLite schema + a thin ticket store).
