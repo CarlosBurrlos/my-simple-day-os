@@ -1,6 +1,6 @@
 # ADR-0006: Document Architecture & Governance Process (meta-ADR)
 
-**Status:** Proposed
+**Status:** Accepted (2026-07-28)
 **Date:** 2026-07-28
 **Deciders:** Carlos
 **Related:** Governs the process around all ADRs; codifies conventions practiced informally in ADR-0001..0003, POLICY.md, and the W1 review. ADR-0004/0005 reserved for Timer/Clock and Masking & priority (see ADR-0003 §Deferred).
@@ -21,7 +21,7 @@ Without this ADR: lifecycle states are folklore ("Proposed" means whatever we re
 
 ## Decision
 
-**Proposed:** Adopt the three-tier document architecture and governance process below. All rules take effect on acceptance; tooling (`just ratify`, `just audit`, frontmatter) is chartered here and built as separate work items (W3, W6, W7).
+Adopt the three-tier document architecture and governance process below. Reviewed and **Accepted** 2026-07-28 — all rules are now in effect; tooling (`just ratify`, `just audit`, frontmatter) is chartered here and built as separate work items (W3, W6, W7). See *Review Notes* below.
 
 ---
 
@@ -80,8 +80,8 @@ The review checklist (generalizing GAPS#W1):
 ## 5. Automation doctrine
 
 - **Machine writes terminate in a human.** No automation moves an ADR's status, ratifies a delta, or edits canon without an explicit human trigger and a human-visible result. There are **no file watchers**; pipelines are pull-based.
-- **`just ratify`** (W6) — human-triggered; applies an *Accepted* ADR's deltas to POLICY.md (ADR → dictionary only, one direction). It automates transcription, never judgment.
-- **`just audit`** (W7) — read-only; reconciles the ledger both ways (POLICY dictionary ↔ Frozen SPEC registries ↔ `docs/sequences.json` high-water marks), checks the ADR/POLICY/SPEC layered DAG for cycles, and emits a JSON graph for agent consumption. Read-only automation needs no trigger discipline; it can run anytime.
+- `**just ratify**` (W6) — human-triggered; applies an *Accepted* ADR's deltas to POLICY.md (ADR → dictionary only, one direction). It automates transcription, never judgment.
+- `**just audit**` (W7) — read-only; reconciles the ledger both ways (POLICY dictionary ↔ Frozen SPEC registries ↔ `docs/sequences.json` high-water marks), checks the ADR/POLICY/SPEC layered DAG for cycles, and emits a JSON graph for agent consumption. Read-only automation needs no trigger discipline; it can run anytime.
 - **Blast-radius scoring** — audit computes, per open ADR, a risk score: severity-weighted count of policy IDs touched (Law = MAJOR weight, Limit = MINOR, Lever = PATCH, per the semver coupling). The score **orders review attention**; it never gates acceptance. How risk ordering is applied (riskiest-first vs. safest-first) is a governance Lever — the **risk appetite** — tunable per session, not fixed here.
 - **Frontmatter** (W3) — each ADR carries a machine-readable YAML block (`id`, `status`, `proposes`, `depends-on`, `supersedes`) as the substrate for audit, blast-radius, and digests. Prose remains authoritative for humans; frontmatter drift from prose is an audit finding.
 
@@ -118,11 +118,21 @@ Planning ends and the **walking skeleton** begins when: this ADR is Accepted, an
 
 ---
 
+## Review Notes (W2)
+
+**Reviewed:** 2026-07-28 · **Verdict:** Accepted without amendment · **Reviewer:** Carlos (human-conducted — full read of the draft plus a requested primer; the terminal stamp per §2/§5).
+
+- This ADR proposes no L/C/K policy deltas (governance rules deliberately live here, not in POLICY.md), so checklist item 1 is trivially satisfied and no ratification into POLICY.md occurs — acceptance itself puts the rules in force.
+- The two flagged judgment calls were reviewed and upheld: governance rules stay out of POLICY.md (G-sequence deferred), and §7's exit criteria let implementation start before ADR-0004/0005 land.
+- An auto-stamp carve-out (AI may stamp zero-Law ADRs) was offered and **not** adopted: the human stamp remains universal.
+
 ## Action Items
 
-1. [ ] Review and accept/amend this ADR (the lifecycle in §2 applies to it reflexively).
+1. [x] Review and accept/amend this ADR (the lifecycle in §2 applies to it reflexively). *(Accepted 2026-07-28.)*
 2. [ ] W5: TEMPLATE-ADR.md implementing §4's required shape.
 3. [ ] W3: frontmatter schema per §5, applied to ADR-0001..0006 retroactively.
 4. [ ] W4: POLICY.md dictionary migration (structure per §1; content unchanged).
 5. [ ] W6: `just ratify`; W7: `just audit` + blast-radius per §5.
 6. [ ] Backfill reviews: ADR-0001 and ADR-0002 are still Proposed and were never formally reviewed; run the §4 checklist on each and stamp verdicts.
+
+&nbsp;
