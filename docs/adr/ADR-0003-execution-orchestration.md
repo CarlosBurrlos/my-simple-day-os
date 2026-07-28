@@ -84,6 +84,7 @@ stateDiagram-v2
     Deferred --> Ready: timer fires
     Ready --> Dispatched: dispatcher assigns a worker
     Dispatched --> Running: worker starts (capability lease)
+    Dispatched --> Failed: worker never starts (ack timeout)
     Running --> Blocked: awaiting dependency/resource
     Blocked --> Ready: unblocked
     Running --> WaitingHuman: needs input / confirm [L5]
@@ -100,35 +101,50 @@ stateDiagram-v2
     Cancelled --> [*]
 ```
 
+Human job-control may cancel a ticket from **any non-terminal state** (Issued, Ready, Deferred, Dispatched, Blocked, WaitingHuman, Running); only the Running edge is drawn to keep the diagram legible.
+
 ### Dispatcher & run queue
 
-A single dispatcher (simplicity over a multi-scheduler design) pulls READY tickets ordered by priority (Lever K1), subject to worker concurrency (new Lever) and the WIP cap (Limit C3) and in-flight ceiling (Limit C2). **Admission control:** a ticket becomes READY only when its dependencies are satisfied *and* a budget is available — this is how runaway load is refused at the door rather than mid-flight.
+A single dispatcher (simplicity over a multi-scheduler design) pulls READY tickets ordered by priority (Lever K1), subject to worker concurrency — the dispatcher enforces **min(K6, C5)**: K6 is the tunable level, C5 the hard ceiling, matching the K5/C1 pairing — and the WIP cap (Limit C3) and in-flight ceiling (Limit C2). **Admission control:** a ticket becomes READY only when its dependencies are satisfied *and* a budget is available — this is how runaway load is refused at the door rather than mid-flight.
 
 ```mermaid
 flowchart TB
     subgraph core["Ring 0 core"]
         sor[("SQLite: tickets + WAL journal")]
-        disp["Dispatcher<br/>pull READY by priority [K1]<br/>respect concurrency [C5] · WIP [C3] · in-flight [C2]"]
+        disp["Dispatcher<br/>pull READY by priority [K1]<br/>respect min(K6, C5) · WIP [C3] · in-flight [C2]"]
+        jrnl["Journal writer (ring 0)<br/>write-ahead intent [L9]<br/>then act — idempotent [L10]"]
     end
     sor -- "READY tickets" --> disp
     disp -- "capability lease [L6 / L11]" --> route{"executor kind?"}
     route -- "agent" --> wa["Agent worker<br/>budget [C6]"]
     route -- "automation" --> wt["Automation worker<br/>deterministic tool"]
     route -- "human" --> wh["Human queue<br/>(Web / Notion)"]
-    wa --> jrnl["write-ahead intent [L9]<br/>then act — idempotent [L10]"]
-    wt --> jrnl
-    wh --> jrnl
-    jrnl -- "result / new state" --> sor
+    wa -- "step intent / result<br/>as message [L4]" --> jrnl
+    wt -- "message [L4]" --> jrnl
+    wh -- "message [L4]" --> jrnl
+    jrnl -- "sole writer [L1]" --> sor
     jrnl -. "irreversible? confirm [L5]" .-> wh
 ```
 
 ### Failure semantics
 
-Timeouts bound every worker (a hung agent is the slowest device on the bus — new Limit on wall-time). Failures retry with capped exponential backoff (new Lever: retry policy; new Limit: max attempts). Beyond the cap, a ticket enters **Compensating** (best-effort corrective action) then **Dropped**. Idempotency keys make a retried step safe to re-run.
+Timeouts bound every worker (a hung agent is the slowest device on the bus). Two distinct bounds: a short **dispatch-acknowledge timeout** (a worker must move Dispatched → Running or the ticket fails and re-enters the retry path) and the **execution wall-time budget** (part of C6, bounding a running worker). Both are expressed in a single scheduler time unit — the tick/quantum — whose value is a SPEC-level constant, so all timeouts share one atomic unit rather than each inventing its own clock. Failures retry with capped exponential backoff (new Lever: retry policy; new Limit: max attempts). Beyond the cap, a ticket enters **Compensating** (best-effort corrective action) then **Dropped**. Idempotency keys make a retried step safe to re-run.
+
+### Exactly-once and the confirmation ladder
+
+Exactly-once external effect is physically impossible (the two-generals problem): a crash between *acting* and *journaling the result* is indistinguishable, on restart, from a crash before acting — intent present, result absent, and the journal alone cannot say whether the email went out. L10 therefore governs **behavior, not physics**: the system never *knowingly* risks a duplicate external effect. It upholds that through a three-rung ladder, selected per device:
+
+1. **Native idempotency key** — the device deduplicates (e.g. Stripe-style keys): retry with the same key is safe; true at-most-once.
+2. **Confirmation write-back** — the device signals or is queryable. An external step journals three marks: **intent** (before acting, L9) → **attempted** (act call issued) → **effect-confirmed**. The confirmation is *not* a special channel: it arrives as an ordinary inbound device event (webhook, poll observation, probe for an embedded marker) through the standard capture path — deduped [L8], written by ring 0 [L1] — and is correlated to the pending journal entry by its idempotency key/marker. On restart, the only suspect set is `attempted`-without-`effect-confirmed`; the rule is **solicit the signal, never re-act while unconfirmed**. This mirrors the write-back model already in the protocol (step 8: "pending until flushed" — here, *pending until confirmed*).
+3. **Opaque device** — no key, no signal: any ambiguity escalates the ticket to **WaitingHuman**. For irreversible actions the bias is explicit: a possible no-send beats a possible double-send.
+
+Rung selection is a **per-device property, not per-ticket logic**: this ADR proposes a small additive delta to the ADR-0002 device taxonomy — each device declares a *confirmation class* ∈ {`idempotent-keyed`, `confirmable`, `opaque`} — and the journal semantics of a step follow from the class of the device acted on. The confirmation timeout (in ticks), the journal step schema, and marker formats are SPEC-level constants.
 
 ### Durable, resumable journal (write-ahead log)
 
 Distinct from the audit log (L7 records *decisions & rationale*); the journal records *execution steps* so work **resumes rather than restarts** after a crash — critical because the runtime host may be ephemeral. The rule: **write the intent to the durable journal before acting**, so on restart the dispatcher reads the last durable state per in-flight ticket and continues without double-acting. Both logs can live in the same SQLite file.
+
+**Who writes the journal — L1/L4 preserved.** Workers never write the journal (or any part of the SoR file) directly. A worker *submits* step intents and results as messages; the ring-0 core performs every durable write, journal included. This keeps L1 absolute — one writer of truth, no exceptions for execution — and it strengthens the crash story: one writer means exactly one recovery path to reason about on restart.
 
 ### Capability leases (the sandbox around a running worker)
 
@@ -150,7 +166,7 @@ The Web control surface (ADR-0001) must expose a live **job view** — running /
 
 **New Laws (proposed):**
 - **L9 — Write-ahead before act.** No external action occurs without a prior durable journal entry (enables safe, non-duplicating resume).
-- **L10 — Idempotent execution.** A step's external effect occurs at most once, enforced by idempotency keys.
+- **L10 — Idempotent execution.** The system never *knowingly* risks a duplicate external effect. (Exactly-once is physically impossible — two-generals; the Law governs behavior.) Upheld by the per-device confirmation ladder (§Exactly-once and the confirmation ladder): native idempotency key where supported, confirmation write-back where observable, and escalation to WaitingHuman where opaque. Blindly re-acting an unconfirmed irreversible step is a violation.
 - **L11 — Leased authority.** A worker acts only within a bounded, revocable capability lease (execution-time extension of L6).
 
 **New Limits (proposed):**
@@ -189,4 +205,5 @@ The Web control surface (ADR-0001) must expose a live **job view** — running /
 3. [ ] Finalize the execution state machine (confirm states/transitions above).
 4. [ ] Specify the **journal record** schema (step, intent, idempotency key, result) — distinct from the audit record.
 5. [ ] Define the **routing rule**: how the mediator assigns `executor_kind` when it issues a ticket.
-6. [ ] Then, and only then, scope the *first* single-responsibility component (likely: the ticket + state-machine schema, or the dispatcher skeleton).
+6. [ ] Record the **confirmation class** field (`idempotent-keyed` / `confirmable` / `opaque`) as an additive delta to the ADR-0002 device taxonomy.
+7. [ ] Then, and only then, scope the *first* single-responsibility component (likely: the ticket + state-machine schema, or the dispatcher skeleton).
