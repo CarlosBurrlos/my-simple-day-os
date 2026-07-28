@@ -1,3 +1,15 @@
+---
+id: ADR-0001
+title: Backbone (System of Record) for my-day-os
+status: Accepted
+date: 2026-07-26
+accepted: 2026-07-28
+proposes: [L1, L3]
+depends-on: []
+supersedes: []
+defers-to: []
+---
+
 # ADR-0001: Backbone (System of Record) for my-day-os
 
 **Status:** Accepted (2026-07-28 — backfill review per ADR-0006 action item 6)

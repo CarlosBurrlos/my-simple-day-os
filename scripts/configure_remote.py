@@ -18,6 +18,7 @@ Usage
 Use a fine-grained, repo-scoped, short-lived token and REVOKE it when the
 sandbox is done. This script writes no secret to any tracked file.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -67,7 +68,9 @@ def configure() -> int:
     if origin.returncode == 0:
         print(f"origin: {origin.stdout.strip()}")
     print("Verify with:  git push --dry-run")
-    print("When finished: python scripts/configure_remote.py --clear  (and revoke the PAT)")
+    print(
+        "When finished: python scripts/configure_remote.py --clear  (and revoke the PAT)"
+    )
     return 0
 
 
@@ -75,8 +78,12 @@ def main() -> int:
     if not _inside_repo():
         print("Not inside a git repository.", file=sys.stderr)
         return 1
-    parser = argparse.ArgumentParser(description="Configure PAT-based push auth for origin.")
-    parser.add_argument("--clear", action="store_true", help="remove the configured push credential")
+    parser = argparse.ArgumentParser(
+        description="Configure PAT-based push auth for origin."
+    )
+    parser.add_argument(
+        "--clear", action="store_true", help="remove the configured push credential"
+    )
     args = parser.parse_args()
     return clear() if args.clear else configure()
 

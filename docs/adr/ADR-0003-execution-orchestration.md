@@ -1,3 +1,15 @@
+---
+id: ADR-0003
+title: Execution & Orchestration Model
+status: Accepted
+date: 2026-07-27
+accepted: 2026-07-28
+proposes: [L9, L10, L11, C5, C6, C7, K6, K7, K8]
+depends-on: [ADR-0001, ADR-0002]
+supersedes: []
+defers-to: [ADR-0004, ADR-0005]
+---
+
 # ADR-0003: Execution & Orchestration Model
 
 **Status:** Accepted (2026-07-28)

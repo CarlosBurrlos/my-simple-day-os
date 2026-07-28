@@ -7,15 +7,6 @@
      their work item pops and completes. Not every queue row needs an
      entry — only the ones with real depth. -->
 
-## W3 — ADR frontmatter schema
-
-Activation mapping (which policy IDs an ADR proposes) lives only in prose
-today. A YAML frontmatter block per ADR — `id`, `status`, `proposes`,
-`depends-on`, `supersedes` — is the enabler for `just audit`, blast-radius
-scoring, and any future digest: it converts prose into a queryable graph.
-Also solves the deferred-decision register gap: ADR-0004/0005 currently exist
-only as inline mentions inside ADR-0003, with nothing tracking the IOU.
-
 ## W5 — TEMPLATE-ADR.md
 
 Implements ADR-0006 §4's required shape: Context, Motivation, Options/
@@ -55,8 +46,3 @@ Read-only validator over the canon:
 
 Blocked on W3: without frontmatter there is nothing machine-readable to audit.
 
-## W8 — Repo hygiene
-
-- `just fmt` — files failing `just check`: `main.py`,
-  `scripts/configure_remote.py`.
-- Delete the `main.py` stub (`uv init` leftover; no application code yet).

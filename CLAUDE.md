@@ -56,6 +56,12 @@ just peek-id L  # show a sequence's next ID without allocating
 allocate via `just next-id <SEQ>` (backed by the atomic store
 `docs/sequences.json`) instead of guessing the next number.
 
+**Policy ID citation style**: refer to policies by their human-readable name
+with the ID as a parenthetical cite — "single writer of truth (L1)", "flush
+cadence (K4)", "the WIP cap (C3)" — on **every** mention, not just the first.
+Never a bare ID; the reader should never have to look up what a naked "C2"
+means.
+
 ## Work Queue Protocol (TODO.md + GAPS.md)
 
 `TODO.md` at the repo root is a **FIFO work queue**, not a conventional checklist — this deliberately breaks the usual TODO convention. `GAPS.md` is its depth partner. Rules:

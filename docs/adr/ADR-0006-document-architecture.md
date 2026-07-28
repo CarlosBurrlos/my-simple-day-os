@@ -1,3 +1,15 @@
+---
+id: ADR-0006
+title: Document Architecture & Governance Process (meta-ADR)
+status: Accepted
+date: 2026-07-28
+accepted: 2026-07-28
+proposes: []
+depends-on: []
+supersedes: []
+defers-to: []
+---
+
 # ADR-0006: Document Architecture & Governance Process (meta-ADR)
 
 **Status:** Accepted (2026-07-28)
