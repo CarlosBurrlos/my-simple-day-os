@@ -1,8 +1,8 @@
 # my-day-os — Policy
 
 **Status:** Living draft — co-evolves with the ADRs; not locked
-**Date:** 2026-07-26
-**Related:** ADR-0001 (Backbone), ADR-0002 (Device Taxonomy & Latency)
+**Date:** 2026-07-28
+**Related:** ADR-0001 (Backbone), ADR-0002 (Device Taxonomy & Latency), ADR-0003 (Execution & Orchestration)
 
 ---
 
@@ -25,7 +25,7 @@ Relationship to the *mechanism-vs-policy* split (ADR-0002): this entire document
 
 ## 1. Laws (inviolable — the firewalls & sandboxes)
 
-Seeded from ADR-0001/0002. Breaking one of these is a bug, not a tuning choice.
+L1–L8 seeded from ADR-0001/0002; L9–L11 ratified by ADR-0003 (2026-07-28). Breaking one of these is a bug, not a tuning choice.
 
 - **L1 — Single writer of truth.** Only the ring-0 core (the mediator, via the deterministic capture layer) writes the system of record. Nothing else, ever.
 - **L2 — Record before reason.** Every event is durably recorded *before* any non-deterministic policy runs on it. Capture cannot be skipped or reordered behind judgment.
@@ -35,6 +35,9 @@ Seeded from ADR-0001/0002. Breaking one of these is a bug, not a tuning choice.
 - **L6 — Least privilege by default.** Every process/agent/view runs with the narrowest capability set that lets it do its job. Absence of a grant means denial.
 - **L7 — Auditability is mandatory.** Every mediator decision logs raw event + decision + rationale. A non-replayable decision is not allowed.
 - **L8 — Idempotent capture.** The same event delivered twice (expiring channels + polling fallback) is recorded once. Dedupe is not optional.
+- **L9 — Write-ahead before act.** No external action occurs without a prior durable journal entry. Workers never write the journal (or any part of the SoR) directly: step intents and results are submitted as messages, and the ring-0 core performs every durable write. Enables safe, non-duplicating resume.
+- **L10 — Idempotent execution.** The system never *knowingly* risks a duplicate external effect. (Exactly-once is physically impossible — two-generals; this Law governs behavior.) Upheld by the per-device confirmation ladder (ADR-0003): native idempotency key where supported, confirmation write-back where observable, escalation to WaitingHuman where opaque. Blindly re-acting an unconfirmed irreversible step is a violation. Mirror of L8 for outputs.
+- **L11 — Leased authority.** A worker acts only within a bounded, time-limited, revocable capability lease granted for its ticket — the execution-time extension of L6. Irreversible actions still require confirmation (L5) even within a lease.
 
 ---
 
@@ -46,18 +49,24 @@ Seeded from ADR-0001/0002. Breaking one of these is a bug, not a tuning choice.
 - **C2 — Max in-flight writes / flush queue depth.** Backpressure before the fast tier outruns slow tiers. *(value: TBD)*
 - **C3 — Absolute WIP cap on active tickets.** A ceiling on concurrently "running" promises, independent of any lever. *(value: TBD)*
 - **C4 — Max unconfirmed-action queue age.** Irreversible actions awaiting confirmation expire rather than pile up. *(value: TBD)*
+- **C5 — Max concurrent workers.** Hard ceiling on dispatcher concurrency; the tunable level K6 turns only below it — the dispatcher enforces min(K6, C5). *(value: TBD; ADR-0003)*
+- **C6 — Per-worker budget.** Max tokens / cost / wall-time per ticket execution; wall-time expressed in scheduler ticks (quantum value: SPEC-level). *(value: TBD; ADR-0003)*
+- **C7 — Max retry attempts.** Beyond the cap a ticket enters Compensating, then Dropped. *(value: TBD; ADR-0003)*
 
 ---
 
 ## 3. Levers (tunable knobs — safe to turn)
 
-*Stubbed — ADR-0003 (masking/priority policy) is expected to ratify most of these.*
+*K1–K3 to be ratified by ADR-0005 (masking & priority); K4–K5 defaults pending (likely ADR-0004, clock/flush territory); K6–K8 ratified by ADR-0003, defaults TBD.*
 
 - **K1 — Context-switch threshold.** How important an event must be to preempt current focus. *(default: TBD)*
 - **K2 — Masking / quiet-hours windows.** Time windows where interrupts are recorded but never preempt. *(default: TBD)*
 - **K3 — Triage aggressiveness.** How eagerly the mediator promotes events into tickets. *(default: TBD)*
 - **K4 — Flush cadence.** How often the write-back cache flushes to Notion/external. *(default: TBD)*
 - **K5 — Batch size.** Events/writes grouped per external call (paired with C1). *(default: TBD)*
+- **K6 — Worker concurrency level.** How many workers the dispatcher runs at once; capped by C5. *(default: TBD; ADR-0003)*
+- **K7 — Retry / backoff policy.** Backoff shape and pacing for failed steps; attempt count capped by C7. *(default: TBD; ADR-0003)*
+- **K8 — Executor-kind routing bias.** How eagerly the mediator prefers automation over an agent when assigning `executor_kind`. *(default: TBD; ADR-0003)*
 
 ---
 
@@ -81,6 +90,7 @@ The lifecycle contract, from ADR-0002's event model. Each step names the tier th
 | Mediator (ring 0) | Read/write SoR; adjudicate; request external actions | Take irreversible external action without confirmation *[L5]* |
 | Views — Web/Obsidian/Notion (ring 3) | Read SoR; submit intents | Write SoR *[L3]* |
 | A ticket / "process" | Only what its granted capability allows | Anything outside its grant *[L6]* |
+| Worker — agent / automation / human (ADR-0003) | Act within its capability lease; submit step intents & results as messages | Write the SoR or journal directly *[L1, L9]*; act beyond or after its lease *[L11]* |
 | External-action capability | The specific granted action, once confirmed | Persist or escalate beyond the single grant |
 
 ---
@@ -138,13 +148,13 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph laws["LAWS — inviolable"]
-        l["L1–L8 · firewalls & sandboxes<br/>change only via a superseding ADR"]
+        l["L1–L11 · firewalls & sandboxes<br/>change only via a superseding ADR"]
     end
     subgraph limits["LIMITS — hard constants"]
-        c["C1–C4 · bound the levers<br/>change deliberately, recorded"]
+        c["C1–C7 · bound the levers<br/>change deliberately, recorded"]
     end
     subgraph levers["LEVERS — tunable"]
-        k["K1–K5 · knobs<br/>tune freely at runtime / config"]
+        k["K1–K8 · knobs<br/>tune freely at runtime / config"]
     end
     laws --> limits --> levers
     limits -. "cap how far a lever may turn" .-> levers
@@ -160,4 +170,4 @@ flowchart TB
 
 ---
 
-*Living document. Sections 2–4 are stubs pending ADR ratification; Section 1 is seeded and considered stable.*
+*Living document. Laws L1–L11 are stable (L9–L11 ratified by ADR-0003). Limit values and Lever defaults remain TBD pending further ADRs (0004, 0005) and the SPEC layer.*
