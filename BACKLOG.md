@@ -84,6 +84,16 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
   inbound tasks enter via the capture path, outbound calls are leased,
   confirmed external actions. Internal worker↔ring-0 messaging needs no
   protocol ceremony.
+- **Gate protocol / lifecycle ABI** — formalize each ticket-state transition
+  as either a **gate** (synchronous, kernel-owned, enumerable: admission,
+  dispatch, act/commit, confirm — may hold/reorder/batch/refuse work) or a
+  **signal** (async transition event any subsystem may observe, none may
+  block — feeds telemetry, notification feed, masking). Gates accept
+  pluggable **strategies** (mechanism = the gate, policy = the strategy;
+  K4/K5 flush batching is the existing instance; dispatch batching the
+  next). Any strategy that holds work carries a max-hold Limit in ticks
+  (Nagle-style bound) so batching can never starve latency. Extends
+  ADR-0003 action items 4–5; execution-SPEC territory.
 - **Compensation prefers deterministic executors** — failure handling SHOULD
   route to automation workers, never an improvising agent (execution-SPEC
   rule when the compensation schema is formalized).
