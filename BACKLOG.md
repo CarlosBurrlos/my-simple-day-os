@@ -98,6 +98,40 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
   route to automation workers, never an improvising agent (execution-SPEC
   rule when the compensation schema is formalized).
 
+## Work optimizations & kernel completeness (late-night OS sweep, 2026-07-28)
+
+- **Memoization** — cache deterministic automation results; idempotency keys
+  (L10) double as cache keys.
+- **Speculative execution with in-order retirement** — the system MAY
+  speculatively perform reversible internal work (draft replies, pre-compute
+  plans); L5's confirm gate is the retirement stage. Agents execute out of
+  order; effects retire in order.
+- **Priority inheritance** — priorities (K1) + resource leases guarantee
+  priority inversion; boost a lease holder to its highest waiter's priority
+  (Mars Pathfinder rule). Dispatch-SPEC material.
+- **Deadline scheduling (EDF)** — tickets gain real deadlines with the clock
+  (ADR-0004); EDF as K1's evolution.
+- **Context compression (VM metaphor returns, for context only)** — agent
+  context window = RAM: working-set selection at dispatch (need-to-know as
+  informational L6), journal-backed digests as swap-out, demand paging from
+  the SoR. Contradicts POLICY's no-VM scope rule for *data*; must re-enter
+  via an ADR paragraph justifying the distinction.
+- **Watchdog** — nothing watches ring 0; external heartbeat on the
+  dispatcher's journal tick.
+- **Idle task** — empty queue = maintenance window: digest generation,
+  journal compaction, speculation.
+- **Load shedding (OOM-killer analog)** — policy for global budget pressure
+  mid-flight: shed lowest-priority reversible work first; never shed
+  awaiting-confirmation work.
+- **Zombie reaping** — lease expiry as the universal reaper: ring 0 reclaims,
+  journals the death, routes to retry/compensate.
+- **Panic / fail-closed mode** — on detected Law violation: halt all external
+  actions, keep capturing (inputs always safe to record; outputs are what
+  hurt). Law-shaped; candidate for a future ADR.
+- **Boot protocol** — startup ordering: integrity scan → reconcile
+  attempted-unconfirmed suspects → resume in-flight → admit new work.
+  Pairs with ADR-0004.
+
 ## Runtime scaffolding
 
 - **FastAPI service shell** — `FastAPIKwArgs`-style ready-made init from
