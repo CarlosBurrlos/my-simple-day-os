@@ -106,6 +106,17 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
   speculatively perform reversible internal work (draft replies, pre-compute
   plans); L5's confirm gate is the retirement stage. Agents execute out of
   order; effects retire in order.
+- **Graph-structured workers: determinism per axis** — a worker graph has two
+  independent determinism axes: topology (fixed vs LLM-routed edges) and
+  nodes (deterministic tool vs judgment). Fixed graph + deterministic nodes
+  = `automation` regardless of framework (LangGraph is substrate, not
+  classification); fixed graph + LLM nodes contains non-determinism inside
+  node boundaries; LLM-routed topology = fully agentic. Node boundary =
+  journal step boundary (worker-internal checkpoints are scratch; ring-0
+  journal stays truth per L9). Deterministic subgraphs are the prime
+  speculation targets (cheap, replayable, cancellable); judgment-node
+  speculation spends tokens — candidate "speculation budget" Lever, spent by
+  the housekeeping daemon at idle. Worker manifests declare their quadrant.
 - **Priority inheritance** — priorities (K1) + resource leases guarantee
   priority inversion; boost a lease holder to its highest waiter's priority
   (Mars Pathfinder rule). Dispatch-SPEC material.
