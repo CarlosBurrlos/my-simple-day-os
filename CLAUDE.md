@@ -46,6 +46,7 @@ just lint-fix   # uv run ruff check . --fix
 just fmt        # uv run ruff format .
 just fmt-check  # uv run ruff format . --check (no writes)
 just check      # lint + fmt-check — CI-safe, no writes
+just audit      # read-only canon audit: origins, DAG, sequences, blast radius (--json for graph)
 just ids        # show next available ID in every sequence (no allocation)
 just next-id L  # allocate next ID in a sequence (L, C, K, ADR, SPEC); optional count arg
 just peek-id L  # show a sequence's next ID without allocating
