@@ -13,6 +13,51 @@ These capabilities were originally sketched in the pre-trim CLAUDE.md (exact
 original text recoverable via `git show 5dcf468^:CLAUDE.md`). None exist today;
 all are wanted once the project has application code to deserve them.
 
+## Suggested priority (advisory)
+
+**How this section is used:** this is a *suggestion* of graduation order, not a
+queue — TODO.md's FIFO remains the only committed ordering. When pulling from
+the backlog, start reading here; when an item graduates (gets its `W<n>` row in
+TODO.md), remove it from this list. Re-rank freely — reordering here is always
+legal because nothing here is promised. Ranking rationale: what unblocks other
+work first, then design notes in the order their host ADR/SPEC will need them,
+then infrastructure that only pays off at scale.
+
+**Tier 1 — graduate alongside the first application code:**
+
+1. **Testing infrastructure** — the first line of app code deserves a test
+   harness; `scripts/next_id.py` is already an untested customer.
+2. **Pre-commit hooks** — cheap; locks `just check` in at commit time.
+3. **Type checking (ty)** — cheapest while the codebase is small.
+
+**Tier 2 — design notes, in the order their host documents will want them:**
+
+4. **Gate protocol / lifecycle ABI** — the execution-SPEC backbone; most other
+   scheduling entries hang off it.
+5. **Graph-structured workers (per-axis determinism)** — feeds the worker
+   manifest + routing rule (ADR-0003 action item 5).
+6. **Context compression + agent retirement/revival** — pairs with the
+   ADR-0004/0005 feature set (urgency-aged alerting needs revival).
+7. **Boot protocol, watchdog, zombie reaping** — dispatcher-skeleton hardening;
+   wanted the week the dispatcher first runs.
+8. **Housekeeping daemon, worker affinity/pooling, dispatch batching** —
+   optimizations that need a working skeleton to optimize.
+9. **Priority inheritance, EDF, load shedding, panic/fail-closed mode** —
+   scheduling maturity; inheritance moves up if resource leases land early.
+10. **Speculative execution, memoization** — luxury tier; needs idle capacity
+    and the daemon.
+11. **A2A device driver** — interop; waits for an actual external agent to
+    talk to.
+
+**Tier 3 — project infrastructure that pays off at scale:**
+
+12. **`tools/` package** — Logger first (the dispatcher's logging story),
+    Config and Tracer as code grows.
+13. **CI/CD** — once there's a test suite worth running remotely.
+14. **Docs site (MkDocs)** — once the canon has outside readers.
+15. **SQL tooling, FastAPI shell, Docker/Dev Container** — when their
+    subjects exist.
+
 ## Testing infrastructure
 
 - **pytest with enforced coverage** — 75% minimum including branch coverage;

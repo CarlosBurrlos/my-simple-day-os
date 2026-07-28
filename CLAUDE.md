@@ -60,6 +60,7 @@ allocate via `just next-id <SEQ>` (backed by the atomic store
 - **Scaling pattern**: each feature (or feature set) gets its own VSCode workspace; on starting work there, a fresh TODO.md/GAPS.md pair is created in that workspace as the landing zone for its queued items. Work-ID sequences are per-queue.
 - **Agents**: when picking up work, start from the top of TODO.md unless told otherwise; when discovering new work mid-task, append a row (and a GAPS entry if it has depth) instead of losing it or starting it immediately.
 - **Three horizons**: `BACKLOG.md` (someday/concepts, unscheduled) → `TODO.md` (queued, committed-to) → `GAPS.md` (depth on what's queued). Backlog items graduate by getting a `W<n>` row in TODO.md; they never carry work IDs while parked.
+- **Backlog priority**: BACKLOG.md opens with a "Suggested priority" section — an *advisory* graduation order (usage rules documented in-place there). It never overrides TODO.md's FIFO; re-ranking it is always legal.
 
 ## Commit Messages — Conventional Commits
 
