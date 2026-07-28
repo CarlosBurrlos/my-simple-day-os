@@ -1,3 +1,15 @@
+---
+id: ADR-0002
+title: Device Taxonomy & Latency Hierarchy
+status: Accepted
+date: 2026-07-26
+accepted: 2026-07-28
+proposes: [L2, L4, L5, L6, L7, L8, C1, K4, K5]
+depends-on: [ADR-0001]
+supersedes: []
+defers-to: []
+---
+
 # ADR-0002: Device Taxonomy & Latency Hierarchy
 
 **Status:** Accepted (2026-07-28 — backfill review per ADR-0006 action item 6)
