@@ -20,6 +20,7 @@ is no application code yet; the work product is the design canon in `docs/`.
 | `docs/templates/` | Document templates (SPEC; ADR template pending) |
 | `docs/diagrams/` | Mermaid sources + rendered HTML |
 | `TODO.md` / `GAPS.md` | FIFO work queue + its depth partner (protocol below) |
+| `BACKLOG.md` | Future-capabilities parking lot — unscheduled, no work IDs |
 | `AGENTS.md` | Sandbox git flow (remote setup, PAT) + agent guardrails |
 | `COMMIT_CONVENTION.md` | Self-contained Conventional Commits rules |
 
@@ -58,6 +59,7 @@ allocate via `just next-id <SEQ>` (backed by the atomic store
 - **GAPS.md**: one `## W<n> — <name>` section per work item that needs more depth than a one-line row (what the gap is, why it matters, what "done" looks like). Not every row needs an entry. A row's `depth` column points at its entry (`GAPS#W<n>`). Delete the entry when its work item completes.
 - **Scaling pattern**: each feature (or feature set) gets its own VSCode workspace; on starting work there, a fresh TODO.md/GAPS.md pair is created in that workspace as the landing zone for its queued items. Work-ID sequences are per-queue.
 - **Agents**: when picking up work, start from the top of TODO.md unless told otherwise; when discovering new work mid-task, append a row (and a GAPS entry if it has depth) instead of losing it or starting it immediately.
+- **Three horizons**: `BACKLOG.md` (someday/concepts, unscheduled) → `TODO.md` (queued, committed-to) → `GAPS.md` (depth on what's queued). Backlog items graduate by getting a `W<n>` row in TODO.md; they never carry work IDs while parked.
 
 ## Commit Messages — Conventional Commits
 
