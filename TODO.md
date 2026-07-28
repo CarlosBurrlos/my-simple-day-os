@@ -11,11 +11,10 @@
 
 ```csv
 id,name,context,blocked_by,depth
-W2,Meta-ADR (document architecture),Ratify/audit doctrine + ADR lifecycle + amendment story + WIP cap,,GAPS#W2
-W3,ADR frontmatter schema,Machine-readable YAML block per ADR (id/status/proposes/depends-on/supersedes),W2,GAPS#W3
-W4,POLICY.md dictionary migration,Restructure POLICY.md into the dictionary form agreed in the governance design,W2,
-W5,TEMPLATE-ADR.md,Mirrors SPEC registry shape; pre-normative; pairs with meta-ADR,W2,GAPS#W5
-W6,just ratify,Pull-based ADR -> dictionary step; no watchers; human-triggered,W2 W3,
+W3,ADR frontmatter schema,Machine-readable YAML block per ADR (id/status/proposes/depends-on/supersedes); apply to ADR-0001..0006,,GAPS#W3
+W4,POLICY.md dictionary migration,Restructure POLICY.md into the dictionary form per ADR-0006 §1,,
+W5,TEMPLATE-ADR.md,Implements ADR-0006 §4 required shape; mirrors SPEC registry table,,GAPS#W5
+W6,just ratify,Pull-based ADR -> dictionary step; no watchers; human-triggered (ADR-0006 §5),W3,
 W7,just audit,Read-only ledger reconciliation + DAG/cycle checks + blast-radius scoring,W3,GAPS#W7
 W8,Repo hygiene,just fmt (unformatted files); delete main.py stub,,GAPS#W8
 W9,Draft ADR-0004 Timer/Clock,ID reserved 2026-07-28 (named in accepted ADR-0003); time-triggered + recurring promises; tick/quantum home; K4/K5 ownership,W5,
