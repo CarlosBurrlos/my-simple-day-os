@@ -6,4 +6,4 @@ Currently in the planning phase — see `AGENTS.md` for the entry point, then `O
 
 ## AI co-authoring
 
-This project is developed with AI assistance (Anthropic's Claude). Rather than tagging individual commits with attribution trailers, this note serves as the single, repo-wide acknowledgment: commits authored by Carlos Burroughs may include AI-generated or AI-assisted content.
+This project is developed with AI assistance (Anthropic's Claude).
