@@ -38,8 +38,8 @@ Rules:
 | ADR-0001 | Backbone (System of Record) | Accepted | L1, L3 |
 | ADR-0002 | Device Taxonomy & Latency Hierarchy | Accepted | L2, L4–L8, C1 |
 | ADR-0003 | Execution & Orchestration Model | Accepted | L9–L11, C5–C7, K6–K8 |
-| ADR-0004 | Timer / Clock device | *reserved* | — |
-| ADR-0005 | Masking & priority policy | *reserved* | K1–K3 expected |
+| ADR-0004 | Timer / Clock Device | Accepted | C8, C2, C4, K4, K5 |
+| ADR-0005 | Masking & Priority Policy | Accepted | K9, K1–K3, C3 |
 | ADR-0006 | Document Architecture & Governance (meta) | Accepted | — |
 
 ## Origin-pending policy IDs
@@ -47,12 +47,7 @@ Rules:
 POLICY.md stubs whose originating ADR is not yet assigned — a pre-seeded
 audit finding, to be claimed by ADR-0004/0005 or a successor:
 
-- **The flush family** — flush cadence (K4), batch size (K5), the in-flight
-  write ceiling (C2), and the unconfirmed-action age limit (C4): all arise
-  from the ADR-0002 write-back model but were never formally proposed by it.
-  Expected owner: ADR-0004 (clock/flush territory), claiming the family in
-  one act.
-- **The WIP cap on active tickets (C3)** — scheduling territory; owner TBD
-  (ADR-0004 or ADR-0005).
-- **Context-switch threshold (K1), masking windows (K2), triage
-  aggressiveness (K3)** — expected from ADR-0005.
+*(Empty as of 2026-07-29 — every policy ID in the dictionary has a
+ratified origin. The flush family transferred to ADR-0004; the masking
+trio and the active-ticket WIP cap (C3) to ADR-0005. New unowned stubs
+land here; `just audit` reconciles.)*
