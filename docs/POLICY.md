@@ -49,7 +49,7 @@ L1–L8 seeded from ADR-0001/0002; L9–L11 ratified by ADR-0003 (2026-07-28). B
 
 - **C1 — Min external poll interval / rate ceiling.** Respect device "bus bandwidth" (e.g. Notion ~3 req/s). *(value: TBD · origin: ADR-0002 · SPEC: —)*
 - **C2 — Max in-flight writes / flush queue depth.** Backpressure before the fast tier outruns slow tiers. *(value: TBD · origin: ADR-0004 · SPEC: —)*
-- **C3 — Absolute WIP cap on active tickets.** A ceiling on concurrently "running" promises, independent of any lever. *(value: TBD · origin: pending — claim proposed by ADR-0005 · SPEC: —)*
+- **C3 — Absolute WIP cap on active tickets.** A ceiling on concurrently "running" promises, independent of any lever. *(value: TBD · origin: ADR-0005 · SPEC: —)*
 - **C4 — Max unconfirmed-action queue age.** Irreversible actions awaiting confirmation expire rather than pile up. *(value: TBD · origin: ADR-0004 · SPEC: —)*
 - **C5 — Max concurrent workers.** Hard ceiling on dispatcher concurrency; the tunable level K6 turns only below it — the dispatcher enforces min(K6, C5). *(value: TBD · origin: ADR-0003 · SPEC: —)*
 - **C6 — Per-worker budget.** Max tokens / cost / wall-time per ticket execution; wall-time expressed in scheduler ticks (quantum value: SPEC-level). *(value: TBD · origin: ADR-0003 · SPEC: —)*
@@ -60,16 +60,17 @@ L1–L8 seeded from ADR-0001/0002; L9–L11 ratified by ADR-0003 (2026-07-28). B
 
 ## 3. Levers (tunable knobs — safe to turn)
 
-*K1–K3 claim proposed by ADR-0005 (in review); K4–K5 ratified by ADR-0004 (2026-07-29); K6–K8 ratified by ADR-0003. All defaults TBD.*
+*K1–K3 and K9 ratified by ADR-0005; K4–K5 by ADR-0004; K6–K8 by ADR-0003. All defaults TBD.*
 
-- **K1 — Context-switch threshold.** How important an event must be to preempt current focus. *(default: TBD · origin: pending → ADR-0005 expected · SPEC: —)*
-- **K2 — Masking / quiet-hours windows.** Time windows where interrupts are recorded but never preempt. *(default: TBD · origin: pending → ADR-0005 expected · SPEC: —)*
-- **K3 — Triage aggressiveness.** How eagerly the mediator promotes events into tickets. *(default: TBD · origin: pending → ADR-0005 expected · SPEC: —)*
+- **K1 — Context-switch threshold.** How important an event must be to preempt current focus. *(default: TBD · origin: ADR-0005 · SPEC: —)*
+- **K2 — Masking / quiet-hours windows.** Time windows where interrupts are recorded but never preempt. *(default: TBD · origin: ADR-0005 · SPEC: —)*
+- **K3 — Triage aggressiveness.** How eagerly the mediator promotes events into tickets. *(default: TBD · origin: ADR-0005 · SPEC: —)*
 - **K4 — Flush cadence.** How often the write-back cache flushes to Notion/external. *(default: TBD · origin: ADR-0004 · SPEC: —)*
 - **K5 — Batch size.** Events/writes grouped per external call (paired with C1). *(default: TBD · origin: ADR-0004 · SPEC: —)*
 - **K6 — Worker concurrency level.** How many workers the dispatcher runs at once; capped by C5. *(default: TBD · origin: ADR-0003 · SPEC: —)*
 - **K7 — Retry / backoff policy.** Backoff shape and pacing for failed steps; attempt count capped by C7. *(default: TBD · origin: ADR-0003 · SPEC: —)*
 - **K8 — Executor-kind routing bias.** How eagerly the mediator prefers automation over an agent when assigning `executor_kind`. *(default: TBD · origin: ADR-0003 · SPEC: —)*
+- **K9 — Urgency-aging curve.** How an item's urgency grows toward its clock-fed deadline (ADR-0004); governs when queued or completed work earns preemption past the context-switch threshold (K1). Per-class ramp parameters are SPEC-level. *(default: TBD · origin: ADR-0005 · SPEC: —)*
 
 ---
 
@@ -157,7 +158,7 @@ flowchart TB
         c["C1–C8 · bound the levers<br/>change deliberately, recorded"]
     end
     subgraph levers["LEVERS — tunable"]
-        k["K1–K8 · knobs<br/>tune freely at runtime / config"]
+        k["K1–K9 · knobs<br/>tune freely at runtime / config"]
     end
     laws --> limits --> levers
     limits -. "cap how far a lever may turn" .-> levers
@@ -175,4 +176,4 @@ Governed by ADR-0006 §3 (authoritative). In brief:
 
 ---
 
-*Living document. Laws L1–L11 are stable. Limits C1–C8 and Levers K1–K9 all have origins ratified or in review (ADR-0005); values and defaults remain TBD pending the SPEC layer.*
+*Living document. Laws L1–L11 are stable. Every Limit (C1–C8) and Lever (K1–K9) has a ratified origin; values and defaults remain TBD pending the SPEC layer.*

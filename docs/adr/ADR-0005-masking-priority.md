@@ -1,8 +1,9 @@
 ---
 id: ADR-0005
 title: Masking & Priority Policy
-status: Proposed
+status: Accepted
 date: 2026-07-29
+accepted: 2026-07-29
 proposes: [C3, K1, K2, K3, K9]
 depends-on: [ADR-0002, ADR-0003, ADR-0004]
 supersedes: []
@@ -11,7 +12,7 @@ defers-to: []
 
 # ADR-0005: Masking & Priority Policy
 
-**Status:** Proposed
+**Status:** Accepted (2026-07-29)
 **Date:** 2026-07-29
 **Deciders:** Carlos
 **Related:** Builds on ADR-0002 (context-switch decision) and ADR-0003 (execution); depends on ADR-0004 (the clock provides the time that urgency aging consumes). Number reserved by accepted ADR-0003.
@@ -77,7 +78,7 @@ Triage aggressiveness (K3) tunes how eagerly the mediator promotes events into t
 
 ## Decision
 
-**Proposed:** Adopt Option C — two channels (feed + preemption), urgency computed by an aging curve (K9) over clock-provided deadlines, preemption gated by the context-switch threshold (K1) under masking windows (K2) with an explicit break-glass class, triage bounded by aggressiveness (K3) under the active-ticket WIP cap (C3), and completion decoupled from notification throughout.
+Reviewed and **Accepted** 2026-07-29 — see *Review Notes (W12)* below. Adopt Option C — two channels (feed + preemption), urgency computed by an aging curve (K9) over clock-provided deadlines, preemption gated by the context-switch threshold (K1) under masking windows (K2) with an explicit break-glass class, triage bounded by aggressiveness (K3) under the active-ticket WIP cap (C3), and completion decoupled from notification throughout.
 
 ---
 
@@ -105,8 +106,21 @@ None. With this ADR, every stubbed policy in the dictionary has a formal origin,
 
 ---
 
+## Review Notes (W12)
+
+**Reviewed:** 2026-07-29 · **Verdict:** Accepted · **Reviewer:** Carlos (human stamp per ADR-0006 §2; draft + checklist self-review conducted by Claude).
+
+- The active-ticket WIP cap (C3) placement here — attention-protection
+  territory rather than dispatch mechanics — was flagged as the review's
+  judgment call and upheld by the reviewer.
+- Checklist: every delta carries kind + violation condition + origin section;
+  claims match the origin-pending ledger; break-glass honors auditability
+  (L7) and record-before-reason (L2); no conflicts with the Laws (L1–L11).
+- With this acceptance the origin-pending ledger empties: every policy ID in
+  the dictionary has a ratified origin.
+
 ## Action Items (research/planning)
 
-1. [ ] Review and accept/amend this ADR.
-2. [ ] On acceptance: ratify the deltas — the urgency-aging curve (K9) new; the masking trio (K1–K3) and the active-ticket WIP cap (C3) origin-claimed — into POLICY.md and clear the origin-pending ledger.
+1. [x] Review and accept/amend this ADR. *(Accepted 2026-07-29.)*
+2. [x] On acceptance: ratify the deltas — the urgency-aging curve (K9) new; the masking trio (K1–K3) and the active-ticket WIP cap (C3) origin-claimed — into POLICY.md and clear the origin-pending ledger.
 3. [ ] SPEC work: urgency function, per-class ramps, break-glass class format, feed rendering rules.
