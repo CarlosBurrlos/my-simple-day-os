@@ -67,7 +67,8 @@ Per the taxonomy (ADR-0002): the Clock is an **internal device** — the first d
 
 ## Mechanisms
 
-- **Tick/quantum (C8).** All internal timing — dispatch-ack, wall-time in the per-worker budget (C6), confirmation timeouts, lease durations, backoff pacing for the retry policy (K7) — is expressed in ticks. The tick's real-time value is a hard constant: proposed as the scheduler tick quantum (C8), value SPEC-level.
+- **Tick/quantum (C8).** All internal timing — dispatch-ack, wall-time in the per-worker budget (C6), confirmation timeouts, lease durations, backoff pacing for the retry policy (K7) — is expressed in ticks. The tick's real-time value is a hard constant: proposed as the scheduler tick quantum (C8), value SPEC-level (human-scale — likely ≥ 1 s; this OS needs no millisecond precision).
+- **Tickless implementation (informative).** The tick is a **unit of account, not a heartbeat**: `tick = floor(monotonic_now / quantum)`, derived on demand from the host OS's monotonic clock — the host is our hardware; its clock is our oscillator. No process wakes per quantum (the tickless-kernel lesson): the timer service is a long-lived, mostly-asleep ring-0 component doing sleep-until-next-deadline, waking only when a timer is due or an earlier one is registered. Idle cost is zero. Quantization to tick boundaries also yields timer coalescing for free.
 - **Deferred tickets.** `Ready → Deferred: scheduled` records a target tick; the timer fire re-readies the ticket through admission control. This activates the deferred-state edge accepted in ADR-0003.
 - **Recurring promises.** A recurrence is a **template ticket** plus a repeating timer: each fire *issues a fresh ticket* from the template (copy-on-write instantiation) rather than resurrecting a completed one — IDs stay permanent, history stays honest, and editing the template changes future instances only.
 - **Deadlines.** A ticket may carry a deadline (a tick); the clock makes it real. This is the substrate ADR-0005's urgency aging consumes — the clock *provides* time; masking & priority *decides* what time means.
@@ -120,3 +121,5 @@ None — this ADR closes ADR-0003's first IOU. The boot protocol (full startup o
 1. [ ] Review and accept/amend this ADR.
 2. [ ] On acceptance: ratify the deltas — the tick quantum (C8) new; the flush family (C2, C4, K4, K5) origin-claimed — into POLICY.md and clear the origin-pending ledger rows.
 3. [ ] SPEC work: tick value, coalescing window, timer record schema, wall-time translation rules.
+
+&nbsp;
