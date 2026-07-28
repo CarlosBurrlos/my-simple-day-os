@@ -12,5 +12,4 @@
 ```csv
 id,name,context,blocked_by,depth
 W6,just ratify,Pull-based ADR -> dictionary step; no watchers; human-triggered (ADR-0006 §5),,
-W7,just audit,Read-only ledger reconciliation + DAG/cycle checks + blast-radius scoring; needs PyYAML (ask first per AGENTS.md); origin-pending ledger is a pre-seeded finding,,GAPS#W7
 ```

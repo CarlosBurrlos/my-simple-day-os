@@ -42,6 +42,10 @@ status:
     @echo "── ID high-water marks ────────────────────────────"
     @uv run python scripts/next_id.py --list
 
+# Audit the canon: frontmatter <-> POLICY <-> ID ledger; read-only (ADR-0006 §5)
+audit *args:
+    uv run python scripts/audit.py {{args}}
+
 # Show the next available ID in every sequence (no allocation)
 ids:
     uv run python scripts/next_id.py --list
