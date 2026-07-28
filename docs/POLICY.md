@@ -48,24 +48,25 @@ L1–L8 seeded from ADR-0001/0002; L9–L11 ratified by ADR-0003 (2026-07-28). B
 *Stubbed — values to be ratified by ADRs. These cap how far a lever may be turned before it endangers the system.*
 
 - **C1 — Min external poll interval / rate ceiling.** Respect device "bus bandwidth" (e.g. Notion ~3 req/s). *(value: TBD · origin: ADR-0002 · SPEC: —)*
-- **C2 — Max in-flight writes / flush queue depth.** Backpressure before the fast tier outruns slow tiers. *(value: TBD · origin: pending → ADR-0004 expected · SPEC: —)*
-- **C3 — Absolute WIP cap on active tickets.** A ceiling on concurrently "running" promises, independent of any lever. *(value: TBD · origin: pending — owner TBD · SPEC: —)*
-- **C4 — Max unconfirmed-action queue age.** Irreversible actions awaiting confirmation expire rather than pile up. *(value: TBD · origin: pending → ADR-0004 expected · SPEC: —)*
+- **C2 — Max in-flight writes / flush queue depth.** Backpressure before the fast tier outruns slow tiers. *(value: TBD · origin: ADR-0004 · SPEC: —)*
+- **C3 — Absolute WIP cap on active tickets.** A ceiling on concurrently "running" promises, independent of any lever. *(value: TBD · origin: pending — claim proposed by ADR-0005 · SPEC: —)*
+- **C4 — Max unconfirmed-action queue age.** Irreversible actions awaiting confirmation expire rather than pile up. *(value: TBD · origin: ADR-0004 · SPEC: —)*
 - **C5 — Max concurrent workers.** Hard ceiling on dispatcher concurrency; the tunable level K6 turns only below it — the dispatcher enforces min(K6, C5). *(value: TBD · origin: ADR-0003 · SPEC: —)*
 - **C6 — Per-worker budget.** Max tokens / cost / wall-time per ticket execution; wall-time expressed in scheduler ticks (quantum value: SPEC-level). *(value: TBD · origin: ADR-0003 · SPEC: —)*
 - **C7 — Max retry attempts.** Beyond the cap a ticket enters Compensating, then Dropped. *(value: TBD · origin: ADR-0003 · SPEC: —)*
+- **C8 — Scheduler tick quantum.** The single atomic time unit: every internal timeout (dispatch-ack, wall-time in the per-worker budget (C6), confirmation timeouts, lease durations, backoff pacing) is expressed in ticks, derived on demand from the host monotonic clock (tickless). Violation: an internal timeout expressed in any other unit. *(value: TBD — human-scale, likely ≥ 1 s · origin: ADR-0004 · SPEC: —)*
 
 ---
 
 ## 3. Levers (tunable knobs — safe to turn)
 
-*K1–K3 to be ratified by ADR-0005 (masking & priority); K4–K5 defaults pending (likely ADR-0004, clock/flush territory); K6–K8 ratified by ADR-0003, defaults TBD.*
+*K1–K3 claim proposed by ADR-0005 (in review); K4–K5 ratified by ADR-0004 (2026-07-29); K6–K8 ratified by ADR-0003. All defaults TBD.*
 
 - **K1 — Context-switch threshold.** How important an event must be to preempt current focus. *(default: TBD · origin: pending → ADR-0005 expected · SPEC: —)*
 - **K2 — Masking / quiet-hours windows.** Time windows where interrupts are recorded but never preempt. *(default: TBD · origin: pending → ADR-0005 expected · SPEC: —)*
 - **K3 — Triage aggressiveness.** How eagerly the mediator promotes events into tickets. *(default: TBD · origin: pending → ADR-0005 expected · SPEC: —)*
-- **K4 — Flush cadence.** How often the write-back cache flushes to Notion/external. *(default: TBD · origin: pending → ADR-0004 expected · SPEC: —)*
-- **K5 — Batch size.** Events/writes grouped per external call (paired with C1). *(default: TBD · origin: pending → ADR-0004 expected · SPEC: —)*
+- **K4 — Flush cadence.** How often the write-back cache flushes to Notion/external. *(default: TBD · origin: ADR-0004 · SPEC: —)*
+- **K5 — Batch size.** Events/writes grouped per external call (paired with C1). *(default: TBD · origin: ADR-0004 · SPEC: —)*
 - **K6 — Worker concurrency level.** How many workers the dispatcher runs at once; capped by C5. *(default: TBD · origin: ADR-0003 · SPEC: —)*
 - **K7 — Retry / backoff policy.** Backoff shape and pacing for failed steps; attempt count capped by C7. *(default: TBD · origin: ADR-0003 · SPEC: —)*
 - **K8 — Executor-kind routing bias.** How eagerly the mediator prefers automation over an agent when assigning `executor_kind`. *(default: TBD · origin: ADR-0003 · SPEC: —)*
@@ -153,7 +154,7 @@ flowchart TB
         l["L1–L11 · firewalls & sandboxes<br/>change only via a superseding ADR"]
     end
     subgraph limits["LIMITS — hard constants"]
-        c["C1–C7 · bound the levers<br/>change deliberately, recorded"]
+        c["C1–C8 · bound the levers<br/>change deliberately, recorded"]
     end
     subgraph levers["LEVERS — tunable"]
         k["K1–K8 · knobs<br/>tune freely at runtime / config"]
@@ -174,4 +175,4 @@ Governed by ADR-0006 §3 (authoritative). In brief:
 
 ---
 
-*Living document. Laws L1–L11 are stable (L9–L11 ratified by ADR-0003). Limit values and Lever defaults remain TBD pending further ADRs (0004, 0005) and the SPEC layer.*
+*Living document. Laws L1–L11 are stable. Limits C1–C8 and Levers K1–K9 all have origins ratified or in review (ADR-0005); values and defaults remain TBD pending the SPEC layer.*

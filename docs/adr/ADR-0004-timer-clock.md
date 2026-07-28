@@ -1,8 +1,9 @@
 ---
 id: ADR-0004
 title: Timer / Clock Device
-status: Proposed
+status: Accepted
 date: 2026-07-29
+accepted: 2026-07-29
 proposes: [C2, C4, C8, K4, K5]
 depends-on: [ADR-0002, ADR-0003]
 supersedes: []
@@ -11,7 +12,7 @@ defers-to: []
 
 # ADR-0004: Timer / Clock Device
 
-**Status:** Proposed
+**Status:** Accepted (2026-07-29)
 **Date:** 2026-07-29
 **Deciders:** Carlos
 **Related:** Builds on ADR-0002 (Device Taxonomy) and ADR-0003 (Execution & Orchestration), which reserved this number; claims the origin-pending flush family per `docs/adr/README.md`.
@@ -88,7 +89,7 @@ Time is what the flush family was waiting for. This ADR formalizes as its own:
 
 ## Decision
 
-**Proposed:** Adopt Option B — a ring-0 Clock device (monotonic tick, C8-governed) with a timer service that fires timer interrupt events through the standard capture path; timer definitions live in the SoR; recurrence is template-plus-timer instantiation; and this ADR becomes the formal origin of the flush family — the flush cadence (K4), batch size (K5), the in-flight write ceiling (C2), and the unconfirmed-action age limit (C4).
+Reviewed and **Accepted** 2026-07-29 — see *Review Notes (W11)* below. Adopt Option B — a ring-0 Clock device (monotonic tick, C8-governed) with a timer service that fires timer interrupt events through the standard capture path; timer definitions live in the SoR; recurrence is template-plus-timer instantiation; and this ADR becomes the formal origin of the flush family — the flush cadence (K4), batch size (K5), the in-flight write ceiling (C2), and the unconfirmed-action age limit (C4).
 
 ---
 
@@ -116,10 +117,24 @@ None — this ADR closes ADR-0003's first IOU. The boot protocol (full startup o
 
 ---
 
+## Review Notes (W11)
+
+**Reviewed:** 2026-07-29 · **Verdict:** Accepted · **Reviewer:** Carlos (human stamp per ADR-0006 §2; draft + checklist self-review conducted by Claude).
+
+- Review interrogated the tick's technical shape; resolved by the tickless
+  amendment: the tick is a unit of account derived on demand from the host
+  monotonic clock (the host is our hardware), the timer service is a
+  sleep-until-next-deadline component with zero idle cost — nothing ever
+  actually ticks.
+- Checklist: every delta carries kind + violation condition + origin section;
+  claims match the origin-pending ledger; no conflicts with the Laws (L1–L11)
+  found — timer fires enter via the standard capture path under idempotent
+  capture (L8) and record-before-reason (L2).
+
 ## Action Items (research/planning)
 
-1. [ ] Review and accept/amend this ADR.
-2. [ ] On acceptance: ratify the deltas — the tick quantum (C8) new; the flush family (C2, C4, K4, K5) origin-claimed — into POLICY.md and clear the origin-pending ledger rows.
+1. [x] Review and accept/amend this ADR. *(Accepted 2026-07-29.)*
+2. [x] On acceptance: ratify the deltas — the tick quantum (C8) new; the flush family (C2, C4, K4, K5) origin-claimed — into POLICY.md and clear the origin-pending ledger rows.
 3. [ ] SPEC work: tick value, coalescing window, timer record schema, wall-time translation rules.
 
 &nbsp;
