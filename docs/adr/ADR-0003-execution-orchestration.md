@@ -1,6 +1,6 @@
 # ADR-0003: Execution & Orchestration Model
 
-**Status:** Proposed
+**Status:** Accepted (2026-07-28)
 **Date:** 2026-07-27
 **Deciders:** Carlos
 **Related:** Builds on ADR-0001 (Backbone), ADR-0002 (Device Taxonomy & Latency); ratifies deltas into POLICY.md
@@ -23,7 +23,7 @@ Constraints from the charter still hold: single user, minimal code, single-respo
 
 In deli terms: the shop has line cooks (agents), machines (automations), and you (human). A promise is routed to whoever can fulfill it; the ticket rail (run queue) and the expo (dispatcher) stay the same regardless.
 
-Status is **Proposed** — this is the design for your review, not an implementation.
+Reviewed and **Accepted** 2026-07-28 — see *Review Notes (W1)* below. Design only; no implementation yet.
 
 ---
 
@@ -162,7 +162,7 @@ The Web control surface (ADR-0001) must expose a live **job view** — running /
 
 ## Proposed POLICY deltas (ratify into POLICY.md on acceptance)
 
-*Listed here, not yet written to POLICY.md — the amendment process says only an accepted ADR ratifies Laws/Limits.*
+*Ratified into POLICY.md on acceptance, 2026-07-28.*
 
 **New Laws (proposed):**
 - **L9 — Write-ahead before act.** No external action occurs without a prior durable journal entry (enables safe, non-duplicating resume).
@@ -190,6 +190,18 @@ The Web control surface (ADR-0001) must expose a live **job view** — running /
 **Revisit:** the routing policy (how the mediator picks executor kind) as usage teaches which tickets suit automation; whether one dispatcher stays sufficient.
 
 ---
+
+## Review Notes (W1)
+
+**Reviewed:** 2026-07-28 · **Verdict:** Accepted with amendments (all applied pre-acceptance) · **Reviewer:** Carlos, review conducted by Claude per the GAPS#W1 checklist (kind / violation condition / origin section for each proposed ID; conflict check against L1–L8; deferred IOUs explicit).
+
+Findings, all resolved in this document:
+
+1. **L1/L4 conflict in journal write path** — as originally drawn, workers wrote the journal directly. Resolved: workers submit step intents/results as messages; the ring-0 core performs every durable write. One writer, one recovery path.
+2. **State machine gaps** — Cancelled was reachable only from Running; Dispatched had no failure exit. Resolved: human cancel from any non-terminal state; Dispatched → Failed on ack timeout; all timeouts expressed in one scheduler tick/quantum (value SPEC-level).
+3. **C5/K6 ambiguity** — text called concurrency a Lever, diagram a Limit. Resolved: dispatcher enforces min(K6, C5), matching the K5/C1 pairing.
+4. **L10 over-promised** — "at most once, enforced by idempotency keys" is unenforceable for devices without key support (two-generals). Resolved: L10 governs behavior, not physics, upheld by the per-device confirmation ladder (§Exactly-once and the confirmation ladder), with confirmation write-back re-entering as ordinary captured events.
+5. **Stale POLICY.md cross-reference** (Levers section attributed masking to ADR-0003) — fixed in POLICY.md at ratification.
 
 ## Deferred to follow-up ADRs
 
