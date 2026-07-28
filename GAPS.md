@@ -7,30 +7,6 @@
      their work item pops and completes. Not every queue row needs an
      entry — only the ones with real depth. -->
 
-## W2 — Meta-ADR (document architecture)
-
-Collects the doctrine agreed in conversation but not yet written down:
-
-- **ADR lifecycle states**: Proposed → Accepted / Rejected → Superseded; who
-  moves them; what "opening/closing a review" procedurally means.
-- **Amendment story**: IDs are permanent, so changing an accepted ADR means a
-  new ADR that supersedes it — currently implied, nowhere written.
-- **Ratify/audit doctrine**: pull-based `just ratify` (no watchers; machine
-  writes terminate in a human), read-only `just audit`.
-- **Blast-radius scoring** + risk-appetite Lever for review ordering.
-- **WIP cap**: at most ~2 Proposed ADRs open at a time; soft size cap of
-  ~5–6 proposed policy IDs per ADR (ADR-0003's 9 is the ceiling case).
-- **Canon location**: stays in `docs/` until a second consumer exists.
-- **Freeze gate**: no SPEC may move Draft → Frozen before `just audit` (W7)
-  exists and passes — a Frozen version claims immutability, so it must not
-  bake in unaudited drift.
-- **Phase exit criteria**: one sentence defining when planning ends and
-  implementation starts (e.g., ADR-0003 accepted + meta-ADR accepted →
-  walking skeleton begins). The WIP cap bounds breadth; this bounds depth.
-- **TODO/GAPS vs. audit authority**: TODO.md is *intent* (what was chosen
-  and queued); audit output is *state* (what canon says is unresolved).
-  Neither overrides the other; the meta-ADR draws the boundary.
-
 ## W3 — ADR frontmatter schema
 
 Activation mapping (which policy IDs an ADR proposes) lives only in prose
@@ -42,13 +18,11 @@ only as inline mentions inside ADR-0003, with nothing tracking the IOU.
 
 ## W5 — TEMPLATE-ADR.md
 
-Mirrors the SPEC registry shape (proposed policy IDs as a table), pre-normative
-language. Two sections mature RFC processes (PEPs, Rust RFCs, IETF) mandate
-that ours must too:
-
-- **Motivation** — why this change, what breaks without it.
-- **Alternatives considered** — what was rejected and why; the only thing that
-  makes "why not X?" answerable months later.
+Implements ADR-0006 §4's required shape: Context, Motivation, Options/
+Alternatives considered, Decision, Proposed policy deltas (kind +
+allocator-issued ID + violation condition), Consequences, Action items,
+and a Review Notes slot filled on acceptance. Mirrors the SPEC registry
+table for proposed IDs; pre-normative language.
 
 ## W10 — Draft ADR-0005 Masking & priority
 
