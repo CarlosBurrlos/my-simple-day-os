@@ -14,23 +14,32 @@ Two kinds of SQL, two homes (W14):
 
 from __future__ import annotations
 
+import functools
 import re
 import sqlite3
+import types
+from collections.abc import Mapping
 from importlib import resources
 
 _NAME_RE = re.compile(r"^--\s*name:\s*(\w+)\s*$", re.MULTILINE)
 
 
-def load_queries(component: str) -> dict[str, str]:
-    """Parse ``mydayos/sql/<component>.sql`` into {query_name: statement}."""
+@functools.cache
+def load_queries(component: str) -> Mapping[str, str]:
+    """Parse ``mydayos/sql/<component>.sql`` into {query_name: statement}.
+
+    Cached per component (SQL is static per process) and returned as a
+    read-only mapping — the cached object is safe to share because nobody
+    can mutate it (no shared *mutable* state, in miniature).
+    """
     text = (resources.files("mydayos") / "sql" / f"{component}.sql").read_text(
         encoding="utf-8"
     )
     parts = _NAME_RE.split(text)
     # parts = [preamble, name1, body1, name2, body2, ...]
-    return {
-        name: body.strip() for name, body in zip(parts[1::2], parts[2::2], strict=True)
-    }
+    return types.MappingProxyType(
+        {name: body.strip() for name, body in zip(parts[1::2], parts[2::2], strict=True)}
+    )
 
 
 def run_migrations(conn: sqlite3.Connection) -> int:
