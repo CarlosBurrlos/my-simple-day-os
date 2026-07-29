@@ -12,5 +12,4 @@
 ```csv
 id,name,context,blocked_by,depth
 W6,just ratify,Pull-based ADR -> dictionary step; no watchers; human-triggered (ADR-0006 §5),,
-W14,SQL modules + migrations,Numbered migrations (user_version runner in TicketStore init; hand-rolled) + named-query extraction to colocated .sql files,,
 ```

@@ -12,6 +12,10 @@ which ticket truth is written, enforcing in code what the canon declares:
   transitions outside `TRANSITIONS` raise; human cancel is legal from any
   non-terminal state; terminal states are final.
 
+Schema lives in numbered migrations (mydayos/migrations/, applied on open
+via PRAGMA user_version); operational SQL lives in the colocated named-query
+file mydayos/sql/tickets.sql (see mydayos.db, W14).
+
 The tick source is injected (the Clock device, ADR-0004, arrives later);
 the default derives a placeholder tick from the host monotonic clock at a
 1-second quantum — the real scheduler tick quantum (C8) value is SPEC-level.
@@ -28,7 +32,11 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Self
 
+from mydayos.db import load_queries, run_migrations
+
 __all__ = ["IllegalTransition", "State", "Ticket", "TicketStore", "UnknownTicket"]
+
+_Q = load_queries("tickets")
 
 
 class State(StrEnum):
@@ -70,31 +78,6 @@ TRANSITIONS: dict[State, frozenset[State]] = {
     State.CANCELLED: frozenset(),
 }
 
-_SCHEMA = """
-CREATE TABLE IF NOT EXISTS tickets (
-    id            INTEGER PRIMARY KEY,
-    title         TEXT    NOT NULL,
-    executor_kind TEXT    NOT NULL CHECK (executor_kind IN
-                          ('agent', 'automation', 'human')),
-    state         TEXT    NOT NULL,
-    priority      INTEGER NOT NULL DEFAULT 0,
-    deadline_tick INTEGER,
-    created_tick  INTEGER NOT NULL,
-    updated_tick  INTEGER NOT NULL
-);
-CREATE TABLE IF NOT EXISTS journal (
-    id              INTEGER PRIMARY KEY,
-    ticket_id       INTEGER NOT NULL REFERENCES tickets (id),
-    seq             INTEGER NOT NULL,
-    kind            TEXT    NOT NULL,
-    payload         TEXT    NOT NULL,
-    idempotency_key TEXT    UNIQUE,
-    created_tick    INTEGER NOT NULL,
-    UNIQUE (ticket_id, seq)
-);
-CREATE INDEX IF NOT EXISTS ix_tickets_state ON tickets (state, priority);
-"""
-
 
 class IllegalTransition(ValueError):
     """The requested state change has no edge in the accepted machine."""
@@ -130,7 +113,7 @@ class TicketStore:
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.execute("PRAGMA foreign_keys=ON")
-        self._conn.executescript(_SCHEMA)
+        run_migrations(self._conn)
         self._now_tick = now_tick
 
     def close(self) -> None:
@@ -145,31 +128,22 @@ class TicketStore:
     # -- reads ------------------------------------------------------------
 
     def get(self, ticket_id: int) -> Ticket:
-        row = self._conn.execute(
-            "SELECT * FROM tickets WHERE id = ?", (ticket_id,)
-        ).fetchone()
+        row = self._conn.execute(_Q["get_ticket"], (ticket_id,)).fetchone()
         if row is None:
             raise UnknownTicket(ticket_id)
         return _to_ticket(row)
 
     def list(self, state: State | None = None) -> list[Ticket]:
         if state is None:
-            rows = self._conn.execute(
-                "SELECT * FROM tickets ORDER BY priority DESC, id"
-            ).fetchall()
+            rows = self._conn.execute(_Q["list_tickets"]).fetchall()
         else:
             rows = self._conn.execute(
-                "SELECT * FROM tickets WHERE state = ? ORDER BY priority DESC, id",
-                (state.value,),
+                _Q["list_tickets_by_state"], (state.value,)
             ).fetchall()
         return [_to_ticket(r) for r in rows]
 
     def journal_for(self, ticket_id: int) -> list[dict[str, object]]:
-        rows = self._conn.execute(
-            "SELECT seq, kind, payload, created_tick FROM journal"
-            " WHERE ticket_id = ? ORDER BY seq",
-            (ticket_id,),
-        ).fetchall()
+        rows = self._conn.execute(_Q["journal_for"], (ticket_id,)).fetchall()
         return [
             {
                 "seq": r["seq"],
@@ -193,9 +167,7 @@ class TicketStore:
         tick = self._now_tick()
         with self._conn:
             cur = self._conn.execute(
-                "INSERT INTO tickets (title, executor_kind, state, priority,"
-                " deadline_tick, created_tick, updated_tick)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                _Q["insert_ticket"],
                 (
                     title,
                     executor_kind,
@@ -225,10 +197,7 @@ class TicketStore:
             )
             if not legal:
                 raise IllegalTransition(f"{current.value} -> {to.value}")
-            self._conn.execute(
-                "UPDATE tickets SET state = ?, updated_tick = ? WHERE id = ?",
-                (to.value, tick, ticket_id),
-            )
+            self._conn.execute(_Q["set_ticket_state"], (to.value, tick, ticket_id))
             self._journal(
                 ticket_id,
                 "transition",
@@ -251,10 +220,7 @@ class TicketStore:
         idempotency_key: str | None = None,
     ) -> None:
         self._conn.execute(
-            "INSERT INTO journal (ticket_id, seq, kind, payload,"
-            " idempotency_key, created_tick)"
-            " SELECT ?, COALESCE(MAX(seq), 0) + 1, ?, ?, ?, ?"
-            " FROM journal WHERE ticket_id = ?",
+            _Q["insert_journal"],
             (
                 ticket_id,
                 kind,
