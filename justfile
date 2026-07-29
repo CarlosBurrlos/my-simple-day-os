@@ -58,6 +58,10 @@ status:
 audit *args:
     uv run python scripts/audit.py {{args}}
 
+# Fire a test macOS notification (hello-world for the preemption channel)
+notify-test msg="The deli is open — ticket rail online.":
+    uv run python -m mydayos.notify "{{msg}}"
+
 # Show the next available ID in every sequence (no allocation)
 ids:
     uv run python scripts/next_id.py --list

@@ -28,9 +28,9 @@ ORDER BY seq;
 -- name: insert_ticket
 INSERT INTO tickets (
   title, executor_kind, state, priority,
-  deadline_tick, created_tick, updated_tick
+  deadline_tick, created_tick, updated_tick, action
 )
-VALUES (?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 -- name: set_ticket_state
 UPDATE tickets SET state = ?, updated_tick = ?

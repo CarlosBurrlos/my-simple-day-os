@@ -63,6 +63,7 @@ class Ticket:
     deadline_tick: int | None
     created_tick: int
     updated_tick: int
+    action: str | None
 
 
 def _default_tick() -> int:
@@ -123,6 +124,7 @@ class TicketStore:
         executor_kind: str = "human",
         priority: int = 0,
         deadline_tick: int | None = None,
+        action: str | None = None,
     ) -> Ticket:
         tick = self._now_tick()
         with self._db.transaction():
@@ -136,6 +138,7 @@ class TicketStore:
                     deadline_tick,
                     tick,
                     tick,
+                    action,
                 ),
             )
             ticket_id = cur.lastrowid
@@ -198,4 +201,5 @@ def _to_ticket(row: sqlite3.Row) -> Ticket:
         deadline_tick=row["deadline_tick"],
         created_tick=row["created_tick"],
         updated_tick=row["updated_tick"],
+        action=row["action"],
     )
