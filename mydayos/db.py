@@ -38,7 +38,10 @@ def load_queries(component: str) -> Mapping[str, str]:
     parts = _NAME_RE.split(text)
     # parts = [preamble, name1, body1, name2, body2, ...]
     return types.MappingProxyType(
-        {name: body.strip() for name, body in zip(parts[1::2], parts[2::2], strict=True)}
+        {
+            name: body.strip()
+            for name, body in zip(parts[1::2], parts[2::2], strict=True)
+        }
     )
 
 
