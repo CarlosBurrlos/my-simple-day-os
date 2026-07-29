@@ -55,8 +55,9 @@ then infrastructure that only pays off at scale.
     Config and Tracer as code grows.
 13. **CI/CD** — once there's a test suite worth running remotely.
 14. **Docs site (MkDocs)** — once the canon has outside readers.
-15. **SQL tooling, FastAPI shell, Docker/Dev Container** — when their
-    subjects exist.
+15. **FastAPI shell, Docker/Dev Container** — when their subjects exist.
+    *(SQL tooling graduated 2026-07-29: SQLFluff landed with the W14 SQL
+    modules — sqlite dialect, wired into `just check`.)*
 
 ## Testing infrastructure
 
@@ -89,11 +90,6 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
 - **ty** across source and test packages, excluding caches; wired into lint
   tasks and CI.
 
-## SQL tooling
-
-- **SQLFluff** — lint/format SQL (originally BigQuery dialect; here the SoR
-  is SQLite, so re-dialect at graduation). Max line 80, 2-space indent,
-  custom rules for join qualification and unused joins.
 
 ## Pre-commit hooks
 

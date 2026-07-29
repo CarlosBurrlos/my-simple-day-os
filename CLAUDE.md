@@ -45,8 +45,10 @@ just lint       # uv run ruff check .
 just lint-fix   # uv run ruff check . --fix
 just fmt        # uv run ruff format .
 just fmt-check  # uv run ruff format . --check (no writes)
+just lint-sql   # sqlfluff lint mydayos (sqlite dialect)
+just fmt-sql    # sqlfluff fix mydayos
 just test       # unittest suite (tests/)
-just check      # lint + fmt-check + tests — CI-safe, no writes
+just check      # lint + lint-sql + fmt-check + tests — CI-safe, no writes
 just audit      # read-only canon audit: origins, DAG, sequences, blast radius (--json for graph)
 just ids        # show next available ID in every sequence (no allocation)
 just next-id L  # allocate next ID in a sequence (L, C, K, ADR, SPEC); optional count arg

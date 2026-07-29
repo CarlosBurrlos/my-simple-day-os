@@ -25,12 +25,20 @@ fmt:
 fmt-check:
     uv run ruff format . --check
 
+# Lint SQL files (SQLFluff, sqlite dialect; config in .sqlfluff)
+lint-sql:
+    uv run sqlfluff lint mydayos
+
+# Auto-fix SQL lint violations
+fmt-sql:
+    uv run sqlfluff fix mydayos --force
+
 # Run the test suite (stdlib unittest; pytest graduates later from BACKLOG)
 test:
     uv run python -m unittest discover -s tests
 
 # Run all checks (lint + format check + tests) — CI-safe, no writes
-check: lint fmt-check test
+check: lint lint-sql fmt-check test
 
 # Session status report: where we are & what's ready to go
 status:
