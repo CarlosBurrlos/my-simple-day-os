@@ -7,3 +7,7 @@ exclude_rules = ambiguous.column_count, aliasing.expression
 
 [sqlfluff:indentation]
 tab_space_size = 2
+
+[sqlfluff:rules:references.keywords]
+# `action` is not reserved in SQLite; allow it as the tickets column name
+ignore_words = action

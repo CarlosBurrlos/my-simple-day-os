@@ -63,6 +63,7 @@ class Ticket:
     deadline_tick: int | None
     created_tick: int
     updated_tick: int
+    action: str | None
 
 
 def _default_tick() -> int:
@@ -77,6 +78,15 @@ class TicketStore:
     ) -> None:
         self._db = Database(path)
         self._now_tick = now_tick
+
+    @property
+    def path(self) -> Path:
+        """Filesystem home of this store's SQLite file."""
+        return self._db.path
+
+    def now_tick(self) -> int:
+        """Current tick from the injected source (the Clock device's seam)."""
+        return self._now_tick()
 
     def close(self) -> None:
         self._db.close()
@@ -123,6 +133,7 @@ class TicketStore:
         executor_kind: str = "human",
         priority: int = 0,
         deadline_tick: int | None = None,
+        action: str | None = None,
     ) -> Ticket:
         tick = self._now_tick()
         with self._db.transaction():
@@ -136,6 +147,7 @@ class TicketStore:
                     deadline_tick,
                     tick,
                     tick,
+                    action,
                 ),
             )
             ticket_id = cur.lastrowid
@@ -198,4 +210,5 @@ def _to_ticket(row: sqlite3.Row) -> Ticket:
         deadline_tick=row["deadline_tick"],
         created_tick=row["created_tick"],
         updated_tick=row["updated_tick"],
+        action=row["action"],
     )

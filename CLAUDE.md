@@ -47,6 +47,7 @@ just fmt        # uv run ruff format .
 just fmt-check  # uv run ruff format . --check (no writes)
 just lint-sql   # sqlfluff lint mydayos (sqlite dialect)
 just fmt-sql    # sqlfluff fix mydayos
+just demo       # end-to-end: clock fires timers, dispatcher routes them
 just test       # unittest suite (tests/)
 just check      # lint + lint-sql + fmt-check + tests — CI-safe, no writes
 just audit      # read-only canon audit: origins, DAG, sequences, blast radius (--json for graph)

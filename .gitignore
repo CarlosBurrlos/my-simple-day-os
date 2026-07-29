@@ -245,3 +245,8 @@ __marimo__/
 
 # next_id.py lock file (transient)
 docs/sequences.json.lock
+
+# demo databases
+demo.sqlite*
+*.sqlite-wal
+*.sqlite-shm
