@@ -230,4 +230,4 @@ Findings, all resolved in this document:
 4. [ ] Specify the **journal record** schema (step, intent, idempotency key, result) — distinct from the audit record.
 5. [ ] Define the **routing rule**: how the mediator assigns `executor_kind` when it issues a ticket.
 6. [x] Record the **confirmation class** field (`idempotent-keyed` / `confirmable` / `opaque`) as an additive delta to the ADR-0002 device taxonomy. *(Recorded 2026-07-28, during the ADR-0002 backfill review.)*
-7. [ ] Then, and only then, scope the *first* single-responsibility component (likely: the ticket + state-machine schema, or the dispatcher skeleton).
+7. [x] Then, and only then, scope the *first* single-responsibility component (likely: the ticket + state-machine schema, or the dispatcher skeleton). *(Scoped + built 2026-07-29: `mydayos/tickets.py` — TicketStore enforcing this ADR's state machine; per ADR-0006 §7 this ends the planning phase.)*
