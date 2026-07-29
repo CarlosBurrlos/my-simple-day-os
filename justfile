@@ -58,6 +58,10 @@ status:
 audit *args:
     uv run python scripts/audit.py {{args}}
 
+# Run the end-to-end demo: clock fires timers, dispatcher routes them
+demo db="demo.sqlite":
+    uv run python -m mydayos.run {{db}}
+
 # Fire a test macOS notification (hello-world for the preemption channel)
 notify-test msg="The deli is open — ticket rail online.":
     uv run python -m mydayos.notify "{{msg}}"

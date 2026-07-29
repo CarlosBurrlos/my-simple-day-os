@@ -79,6 +79,15 @@ class TicketStore:
         self._db = Database(path)
         self._now_tick = now_tick
 
+    @property
+    def path(self) -> Path:
+        """Filesystem home of this store's SQLite file."""
+        return self._db.path
+
+    def now_tick(self) -> int:
+        """Current tick from the injected source (the Clock device's seam)."""
+        return self._now_tick()
+
     def close(self) -> None:
         self._db.close()
 

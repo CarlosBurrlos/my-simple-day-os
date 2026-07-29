@@ -7,7 +7,7 @@
      - `id` is an informal work ID (W<n>): monotonically increasing, never
        reused, NOT part of the formal ID system (docs/sequences.json).
      - `depth` points at the matching GAPS.md entry when one exists.
-     - next id: W16 -->
+     - next id: W17 -->
 
 ```csv
 id,name,context,blocked_by,depth
