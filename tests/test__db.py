@@ -33,7 +33,7 @@ class MigrationRunnerTest(unittest.TestCase):
     def test_fresh_store_reaches_latest_real_version(self) -> None:
         store = TicketStore(self.root / "sor.sqlite")
         self.addCleanup(store.close)
-        version = store._conn.execute("PRAGMA user_version").fetchone()[0]
+        version = store._db.one("PRAGMA user_version")[0]
         self.assertGreaterEqual(version, 1)
 
     def test_reopen_applies_nothing_new(self) -> None:

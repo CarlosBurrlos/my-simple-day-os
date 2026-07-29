@@ -10,6 +10,11 @@ Two kinds of SQL, two homes (W14):
 - **Named queries** (`mydayos/sql/<component>.sql`) — operational statements.
   Cohesion axis is the *component*: the file lives beside its owning module
   and is parsed by `load_queries` from ``-- name: <query_name>`` sections.
+
+`Database` is the generic half of the ring-0 storage driver: connection,
+pragmas, migrations-on-open, and small execution ergonomics. Component
+stores (e.g. TicketStore) compose one and remain the single write facade —
+"many DB files, one protocol" starts here.
 """
 
 from __future__ import annotations
@@ -20,6 +25,8 @@ import sqlite3
 import types
 from collections.abc import Mapping
 from importlib import resources
+from pathlib import Path
+from typing import Self
 
 _NAME_RE = re.compile(r"^--\s*name:\s*(\w+)\s*$", re.MULTILINE)
 
@@ -67,3 +74,41 @@ def run_migrations(conn: sqlite3.Connection) -> int:
         conn.commit()
         current = version
     return current
+
+
+class Database:
+    """Generic SQLite plumbing for a component store to compose.
+
+    Owns the connection lifecycle: WAL mode, foreign keys, migrations applied
+    on open. Deliberately not a query layer — statements come from the
+    caller's named-query mapping.
+    """
+
+    def __init__(self, path: str | Path) -> None:
+        self._conn = sqlite3.connect(str(path))
+        self._conn.row_factory = sqlite3.Row
+        self._conn.execute("PRAGMA journal_mode=WAL")
+        self._conn.execute("PRAGMA foreign_keys=ON")
+        run_migrations(self._conn)
+
+    def close(self) -> None:
+        self._conn.close()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self.close()
+
+    def transaction(self) -> sqlite3.Connection:
+        """Use as ``with db.transaction():`` — commit on success, rollback on error."""
+        return self._conn
+
+    def execute(self, sql: str, params: tuple = ()) -> sqlite3.Cursor:
+        return self._conn.execute(sql, params)
+
+    def one(self, sql: str, params: tuple = ()) -> sqlite3.Row | None:
+        return self._conn.execute(sql, params).fetchone()
+
+    def all(self, sql: str, params: tuple = ()) -> list[sqlite3.Row]:
+        return self._conn.execute(sql, params).fetchall()
