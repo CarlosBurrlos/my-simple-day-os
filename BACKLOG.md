@@ -189,6 +189,14 @@ Production-ready utilities, each mapping cleanly onto my-day-os needs:
   No long-lived processes waiting on humans. Enables completion-decoupled
   alerting (see GAPS#W10): finished work parks silently and preempts only
   when deadline-aged urgency crosses K1.
+- **Location-independent preemption delivery** (2026-07-29) — local desktop
+  notifications (the W15 osascript driver) only reach the human when they are
+  AT that machine; a remote session proves the gap. The preemption channel
+  needs drivers that follow the human: push service, email/SMS, or a web
+  surface reachable from anywhere. Corollary: the **feed** channel (pull-based,
+  non-preemptive) is remote-native and cheap — build it before more push
+  drivers. All swap behind the existing `Notifier` protocol; ADR-0005's
+  two-channel model is unchanged, only its device list grows.
 - **Watchdog** — nothing watches ring 0; external heartbeat on the
   dispatcher's journal tick.
 - **Housekeeping daemon (kernel-threads analog: kswapd/writeback/journald)** —
